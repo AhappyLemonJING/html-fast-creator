@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { DragEvent, JSX } from 'react'
 import {
   AlertTriangle,
   Bot,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
   Code2,
   Download,
   Eye,
@@ -15,6 +17,7 @@ import {
   Loader2,
   Monitor,
   RefreshCw,
+  Search,
   Smartphone,
   Sparkles,
   Tablet,
@@ -88,7 +91,11 @@ function App(): JSX.Element {
   const [dragActive, setDragActive] = useState(false)
   const [view, setView] = useState<'preview' | 'source'>('preview')
   const [device, setDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop')
+  const [sourceQuery, setSourceQuery] = useState('')
+  const [sourceActiveIndex, setSourceActiveIndex] = useState(0)
   const [aiDraft, setAiDraft] = useState<AiDesignConfig>(initialAiDesign)
+  const sourceEditorRef = useRef<HTMLTextAreaElement | null>(null)
+  const sourceSearchRef = useRef<HTMLInputElement | null>(null)
   const [options, setOptions] = useState<ConversionOptions>({
     theme: 'auto',
     includeCover: true,
@@ -113,10 +120,6 @@ function App(): JSX.Element {
   }, [options, selectedFile])
 
   useEffect(() => {
-    if (selectedFile) void convert()
-  }, [convert, selectedFile])
-
-  useEffect(() => {
     if (!notice) return
     const timeout = window.setTimeout(() => setNotice(null), 2600)
     return () => window.clearTimeout(timeout)
@@ -131,6 +134,7 @@ function App(): JSX.Element {
       return
     }
     setError(null)
+    setResult(null)
     setSelectedFile({ path, name, size, format })
   }, [])
 
@@ -156,14 +160,24 @@ function App(): JSX.Element {
     }
   }
 
-  const applyAiDesign = (): void => {
-    if (!aiDraft.apiKey.trim()) {
+  const applyAiSettings = useCallback((nextDraft: AiDesignConfig, message = 'AI 设计设置已应用。'): boolean => {
+    if (!nextDraft.apiKey.trim()) {
       setNotice('请先填写 API Key。')
-      return
+      return false
     }
-    const nextOptions = { ...options, aiDesign: aiDraft }
-    setOptions(nextOptions)
-    void convert(nextOptions)
+    setOptions((current) => ({ ...current, aiDesign: nextDraft }))
+    setNotice(message)
+    return true
+  }, [])
+
+  const applyAiDesign = (): void => {
+    applyAiSettings(aiDraft)
+  }
+
+  const selectStylePreset = (preset: (typeof stylePresets)[number]): void => {
+    const nextDraft = { ...aiDraft, styleHint: preset.prompt }
+    setAiDraft(nextDraft)
+    applyAiSettings(nextDraft, `已自动应用「${preset.label}」风格。`)
   }
 
   const deviceWidth = useMemo(() => {
@@ -171,6 +185,68 @@ function App(): JSX.Element {
     if (device === 'tablet') return 768
     return undefined
   }, [device])
+
+  const sourceMatches = useMemo(() => {
+    if (view !== 'source' || !result || !sourceQuery) return []
+    const needle = sourceQuery.toLocaleLowerCase()
+    const haystack = result.html.toLocaleLowerCase()
+    const matches: number[] = []
+    let cursor = 0
+
+    while (cursor < haystack.length) {
+      const foundIndex = haystack.indexOf(needle, cursor)
+      if (foundIndex === -1) break
+      matches.push(foundIndex)
+      cursor = foundIndex + Math.max(needle.length, 1)
+    }
+
+    return matches
+  }, [result, sourceQuery, view])
+
+  const sourceMatchIndex = sourceMatches.length > 0
+    ? Math.min(sourceActiveIndex, sourceMatches.length - 1)
+    : -1
+
+  const sourceLocation = useMemo(() => {
+    if (sourceMatchIndex < 0 || !result) return null
+    const beforeMatch = result.html.slice(0, sourceMatches[sourceMatchIndex])
+    const lines = beforeMatch.split('\n')
+    return {
+      line: lines.length,
+      column: lines[lines.length - 1].length + 1
+    }
+  }, [result, sourceMatchIndex, sourceMatches])
+
+  const goToSourceMatch = useCallback((nextIndex: number) => {
+    const textarea = sourceEditorRef.current
+    if (!textarea || sourceMatches.length === 0) return
+
+    const wrappedIndex = (nextIndex + sourceMatches.length) % sourceMatches.length
+    const start = sourceMatches[wrappedIndex]
+    setSourceActiveIndex(wrappedIndex)
+
+    window.requestAnimationFrame(() => {
+      textarea.focus()
+      textarea.setSelectionRange(start, start + sourceQuery.length)
+    })
+  }, [sourceMatches, sourceQuery.length])
+
+  useEffect(() => {
+    setSourceActiveIndex(0)
+  }, [sourceQuery])
+
+  useEffect(() => {
+    if (view !== 'source') return
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'f') {
+        event.preventDefault()
+        sourceSearchRef.current?.focus()
+        sourceSearchRef.current?.select()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [view])
 
   const fileIcon = selectedFile ? formatMeta[selectedFile.format].icon : Upload
   const FileIcon = fileIcon
@@ -285,7 +361,7 @@ function App(): JSX.Element {
                     key={preset.label}
                     className="style-preset"
                     type="button"
-                    onClick={() => setAiDraft((current) => ({ ...current, styleHint: preset.prompt }))}
+                    onClick={() => selectStylePreset(preset)}
                   >
                     {preset.label}
                   </button>
@@ -295,7 +371,7 @@ function App(): JSX.Element {
 
             <button className="apply-button" onClick={applyAiDesign}>
               <RefreshCw size={13} />
-              应用并重新生成
+              应用 AI 设置
             </button>
           </div>
         </section>
@@ -311,6 +387,11 @@ function App(): JSX.Element {
           </div>
 
           <div className="toolbar-actions">
+            <button className="primary-button" disabled={!selectedFile || loading} onClick={() => void convert()}>
+              {loading ? <Loader2 className="spin" size={15} /> : <Sparkles size={15} />}
+              {loading ? '生成中...' : '生成 HTML'}
+            </button>
+
             <div className="view-switch">
               <button className={view === 'preview' ? 'is-active' : ''} onClick={() => setView('preview')}>
                 <Eye size={15} />
@@ -334,7 +415,7 @@ function App(): JSX.Element {
               </button>
             </div>
 
-            <button className="primary-button" disabled={!result || loading} onClick={() => void saveHtml()}>
+            <button className="secondary-button" disabled={!result || loading} onClick={() => void saveHtml()}>
               <Download size={15} />
               导出 HTML
             </button>
@@ -384,10 +465,10 @@ function App(): JSX.Element {
           ) : !result ? (
             <div className="empty-state">
               <div className="empty-icon">
-                <Upload size={30} strokeWidth={1.6} />
+                <Sparkles size={30} strokeWidth={1.6} />
               </div>
-              <div>选择或拖入一个文档</div>
-              <p>转换后的 HTML 会显示在这里，可预览并导出。</p>
+              <div>{selectedFile ? '文档已就绪' : '选择或拖入一个文档'}</div>
+              <p>{selectedFile ? '当前文档尚未生成 HTML。' : '转换后的 HTML 会显示在这里，可预览并导出。'}</p>
             </div>
           ) : view === 'preview' ? (
             <iframe
@@ -399,13 +480,82 @@ function App(): JSX.Element {
               sandbox="allow-scripts allow-same-origin"
             />
           ) : (
-            <textarea
-              className="source-view"
-              value={result.html}
-              onChange={(event) => setResult((current) => current ? { ...current, html: event.target.value } : current)}
-              spellCheck={false}
-              aria-label="HTML 源码编辑器"
-            />
+            <div className="source-panel">
+              <div className="source-searchbar">
+                <Search size={15} />
+                <input
+                  ref={sourceSearchRef}
+                  className="source-search-input"
+                  value={sourceQuery}
+                  onChange={(event) => setSourceQuery(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault()
+                      goToSourceMatch(sourceMatchIndex + 1)
+                    }
+                    if (event.key === 'Escape') {
+                      setSourceQuery('')
+                      sourceEditorRef.current?.focus()
+                    }
+                  }}
+                  placeholder="搜索源码内容"
+                  spellCheck={false}
+                />
+                <span className={`source-search-count ${sourceQuery && sourceMatches.length === 0 ? 'is-empty' : ''}`}>
+                  {sourceQuery
+                    ? sourceMatches.length > 0
+                      ? `${sourceMatchIndex + 1} / ${sourceMatches.length}`
+                      : '无结果'
+                    : `${result.html.length.toLocaleString()} 字符`}
+                </span>
+                {sourceLocation && (
+                  <span className="source-location">
+                    {sourceLocation.line}:{sourceLocation.column}
+                  </span>
+                )}
+                <button
+                  className="source-search-button"
+                  type="button"
+                  title="上一个匹配"
+                  aria-label="上一个匹配"
+                  disabled={sourceMatches.length === 0}
+                  onClick={() => goToSourceMatch(sourceMatchIndex - 1)}
+                >
+                  <ChevronUp size={15} />
+                </button>
+                <button
+                  className="source-search-button"
+                  type="button"
+                  title="下一个匹配"
+                  aria-label="下一个匹配"
+                  disabled={sourceMatches.length === 0}
+                  onClick={() => goToSourceMatch(sourceMatchIndex + 1)}
+                >
+                  <ChevronDown size={15} />
+                </button>
+                <button
+                  className="source-search-button clear-search"
+                  type="button"
+                  title="清空搜索"
+                  aria-label="清空搜索"
+                  disabled={!sourceQuery}
+                  onClick={() => {
+                    setSourceQuery('')
+                    sourceEditorRef.current?.focus()
+                  }}
+                >
+                  <X size={14} />
+                </button>
+              </div>
+              <textarea
+                ref={sourceEditorRef}
+                className="source-view"
+                value={result.html}
+                onChange={(event) => setResult((current) => current ? { ...current, html: event.target.value } : current)}
+                spellCheck={false}
+                aria-label="HTML 源码编辑器"
+              />
+            </div>
           )}
         </section>
       </main>

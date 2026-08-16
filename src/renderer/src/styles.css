@@ -556,6 +556,37 @@ button {
   opacity: 0.45;
 }
 
+.secondary-button {
+  display: inline-flex;
+  height: 36px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: #334155;
+  background: #ffffff;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    color 0.18s ease,
+    background 0.18s ease,
+    opacity 0.18s ease;
+}
+
+.secondary-button:hover {
+  border-color: #b8c4d4;
+  color: #172033;
+  background: #f8fafc;
+}
+
+.secondary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .status-banner {
   display: flex;
   min-height: 34px;
@@ -632,6 +663,101 @@ button {
   transition: width 0.2s ease;
 }
 
+.source-panel {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-height: 620px;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.source-searchbar {
+  display: flex;
+  min-height: 38px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px;
+  border: 1px solid #d7dee8;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+.source-searchbar > svg {
+  margin-left: 7px;
+  color: #64748b;
+  flex: 0 0 auto;
+}
+
+.source-search-input {
+  min-width: 0;
+  height: 28px;
+  flex: 1;
+  padding: 0;
+  border: 0;
+  outline: none;
+  color: #172033;
+  background: transparent;
+  font-size: 11px;
+}
+
+.source-search-input::placeholder {
+  color: #94a3b8;
+}
+
+.source-search-count {
+  flex: 0 0 auto;
+  color: #64748b;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.source-search-count.is-empty {
+  color: #b42318;
+}
+
+.source-location {
+  flex: 0 0 auto;
+  padding: 3px 5px;
+  border-radius: 4px;
+  color: #475569;
+  background: #f1f5f9;
+  font-family: "SFMono-Regular", "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.source-search-button {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 6px;
+  color: #5d6b7d;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    color 0.18s ease,
+    background 0.18s ease;
+}
+
+.source-search-button:hover:not(:disabled) {
+  color: #172033;
+  background: #eef2f7;
+}
+
+.source-search-button:disabled {
+  color: #c3ccd7;
+  cursor: not-allowed;
+}
+
+.source-search-button.clear-search {
+  color: #7b899b;
+}
+
 .source-view {
   width: 100%;
   height: 100%;
@@ -651,6 +777,11 @@ button {
   box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
   resize: none;
   outline: none;
+}
+
+.source-panel .source-view {
+  min-height: 0;
+  flex: 1;
 }
 
 .empty-state {

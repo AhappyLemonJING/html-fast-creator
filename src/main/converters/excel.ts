@@ -1,6 +1,7 @@
 import XLSX from 'xlsx'
 import type { ConversionOptions, ConversionResult } from '../../shared/types'
 import { buildSemanticInsights } from '../design/insights'
+import { normalizeExcelContent } from '../design/normalizers'
 import { prepareDesign } from '../design/prepareDesign'
 import { applyAiDesign } from '../design/aiDesigner'
 import type { DataTable, NormalizedContent } from '../design/types'
@@ -13,6 +14,7 @@ export async function convertExcel(
 ): Promise<ConversionResult> {
   const workbook = XLSX.readFile(filePath, { cellStyles: true })
   const sheetNames = workbook.SheetNames
+  const title = titleFromPath(filePath)
 
   const tables: DataTable[] = sheetNames.map((name) => {
     const rawRows = XLSX.utils.sheet_to_json<unknown[]>(workbook.Sheets[name], {
@@ -33,19 +35,7 @@ export async function convertExcel(
     }
   })
 
-  const content: NormalizedContent = {
-    title: titleFromPath(filePath),
-    sourceFormat: 'excel',
-    sections: sheetNames.map((name, index) => ({
-      id: `sheet-${index}`,
-      level: 1,
-      title: name,
-      body: `工作表 ${name}`
-    })),
-    tables,
-    metrics: [],
-    images: []
-  }
+  const content: NormalizedContent = normalizeExcelContent(title, tables)
 
   const design = prepareDesign(content, options)
   const insights = buildSemanticInsights(content, design.analysis)
@@ -56,7 +46,7 @@ export async function convertExcel(
 
   return {
     html: buildStandaloneHtml({
-      title: titleFromPath(filePath),
+      title,
       body: aiDesign.recipe.contentHtml,
       options: design.resolvedOptions,
       format: 'Excel',
@@ -76,7 +66,7 @@ export async function convertExcel(
         notes: aiDesign.recipe.notes
       }
     }),
-    title: titleFromPath(filePath),
+    title,
     format: 'excel',
     warnings: [],
     sheetCount: sheetNames.length,
