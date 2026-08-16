@@ -210,14 +210,82 @@ flowchart LR
 
 仓库中提供了一些生成结果示例，可下载后查看：
 
-| 示例 | 类型 |
-| --- | --- |
-| [`fund-manager-md-to-html.html`](./examples/fund-manager-md-to-html.html) | Markdown 转 HTML |
-| [`resume-docx-to-html.html`](./examples/resume-docx-to-html.html) | Word 转 HTML |
-| [`resume-pdf-to-html.html`](./examples/resume-pdf-to-html.html) | PDF 转 HTML |
-| [`excel-to-html-1.html`](./examples/excel-to-html-1.html) | Excel 转 HTML |
-| [`excel-to-hutm-2.html`](./examples/excel-to-hutm-2.html) | Excel 转 HTML |
-| [`resume-word-to-html转pdf.pdf`](./examples/resume-word-to-html转pdf.pdf) | HTML 转 PDF |
+点击文件名可以直接打开对应 HTML，点击截图可以查看原图。
+
+### Markdown 转 HTML
+
+[`fund-manager-md-to-html.html`](./examples/fund-manager-md-to-html.html)
+
+<table width="100%">
+  <tr>
+    <td width="33.33%"><a href="./examples/fund-manager-md-to-html-img1.png"><img src="./examples/fund-manager-md-to-html-img1.png" alt="Markdown 转 HTML 示例预览 1" width="100%" /></a></td>
+    <td width="33.33%"><a href="./examples/fund-manager-md-to-html-img2.png"><img src="./examples/fund-manager-md-to-html-img2.png" alt="Markdown 转 HTML 示例预览 2" width="100%" /></a></td>
+    <td width="33.33%"><a href="./examples/fund-manager-md-to-html-img3.png"><img src="./examples/fund-manager-md-to-html-img3.png" alt="Markdown 转 HTML 示例预览 3" width="100%" /></a></td>
+  </tr>
+  <tr>
+    <td width="33.33%"><a href="./examples/fund-manager-md-to-html-img4.png"><img src="./examples/fund-manager-md-to-html-img4.png" alt="Markdown 转 HTML 示例预览 4" width="100%" /></a></td>
+    <td width="33.33%"><a href="./examples/fund-manager-md-to-html-img5.png"><img src="./examples/fund-manager-md-to-html-img5.png" alt="Markdown 转 HTML 示例预览 5" width="100%" /></a></td>
+    <td width="33.33%"></td>
+  </tr>
+</table>
+
+### Word 转 HTML
+
+[`resume-docx-to-html.html`](./examples/resume-docx-to-html.html)
+
+<table width="100%">
+  <tr>
+    <td width="33.33%"><a href="./examples/resume-docx-to-html-img1.png"><img src="./examples/resume-docx-to-html-img1.png" alt="Word 转 HTML 示例预览 1" width="100%" /></a></td>
+    <td width="33.33%"><a href="./examples/resume-docx-to-html-img2.png"><img src="./examples/resume-docx-to-html-img2.png" alt="Word 转 HTML 示例预览 2" width="100%" /></a></td>
+    <td width="33.33%"><a href="./examples/resume-docx-to-html-img3.png"><img src="./examples/resume-docx-to-html-img3.png" alt="Word 转 HTML 示例预览 3" width="100%" /></a></td>
+  </tr>
+  <tr>
+    <td width="33.33%"><a href="./examples/resume-docx-to-html-img4.png"><img src="./examples/resume-docx-to-html-img4.png" alt="Word 转 HTML 示例预览 4" width="100%" /></a></td>
+    <td width="33.33%"><a href="./examples/resume-docx-to-html-img5.png"><img src="./examples/resume-docx-to-html-img5.png" alt="Word 转 HTML 示例预览 5" width="100%" /></a></td>
+    <td width="33.33%"></td>
+  </tr>
+</table>
+
+### PDF 转 HTML
+
+[`resume-pdf-to-html.html`](./examples/resume-pdf-to-html.html)
+
+<table width="100%">
+  <tr>
+    <td width="33.33%"><a href="./examples/resume-pdf-to-html-img1.png"><img src="./examples/resume-pdf-to-html-img1.png" alt="PDF 转 HTML 示例预览 1" width="100%" /></a></td>
+    <td width="33.33%"><a href="./examples/resume-pdf-to-html-img2.png"><img src="./examples/resume-pdf-to-html-img2.png" alt="PDF 转 HTML 示例预览 2" width="100%" /></a></td>
+    <td width="33.33%"><a href="./examples/resume-pdf-to-html-img3.png"><img src="./examples/resume-pdf-to-html-img3.png" alt="PDF 转 HTML 示例预览 3" width="100%" /></a></td>
+  </tr>
+</table>
+
+### Excel 转 HTML
+
+[`excel-to-html-1.html`](./examples/excel-to-html-1.html)
+
+<table width="100%">
+  <tr>
+    <td width="33.33%"><a href="./examples/excel-to-html-1-img1.png"><img src="./examples/excel-to-html-1-img1.png" alt="Excel 转 HTML 示例预览 1" width="100%" /></a></td>
+    <td width="33.33%"><a href="./examples/excel-to-html-1-img2.png"><img src="./examples/excel-to-html-1-img2.png" alt="Excel 转 HTML 示例预览 2" width="100%" /></a></td>
+    <td width="33.33%"><a href="./examples/excel-to-html-1-img3.png"><img src="./examples/excel-to-html-1-img3.png" alt="Excel 转 HTML 示例预览 3" width="100%" /></a></td>
+  </tr>
+</table>
+
+[`excel-to-html-2.html`](./examples/excel-to-html-2.html)
+
+<table width="100%">
+  <tr>
+    <td width="50%"><a href="./examples/excel-to-html-2-img1.png"><img src="./examples/excel-to-html-2-img1.png" alt="Excel 转 HTML 示例预览 4" width="100%" /></a></td>
+    <td width="50%"><a href="./examples/excel-to-html-2-img2.png"><img src="./examples/excel-to-html-2-img2.png" alt="Excel 转 HTML 示例预览 5" width="100%" /></a></td>
+  </tr>
+  <tr>
+    <td width="50%"><a href="./examples/excel-to-html-2-img3.png"><img src="./examples/excel-to-html-2-img3.png" alt="Excel 转 HTML 示例预览 6" width="100%" /></a></td>
+    <td width="50%"><a href="./examples/excel-to-html-2-img4.png"><img src="./examples/excel-to-html-2-img4.png" alt="Excel 转 HTML 示例预览 7" width="100%" /></a></td>
+  </tr>
+</table>
+
+此外，仓库还提供 HTML 转 PDF 的示例文件：
+
+- [`resume-word-to-html转pdf.pdf`](./examples/resume-word-to-html转pdf.pdf)
 
 <a id="已知限制"></a>
 ## 已知限制
