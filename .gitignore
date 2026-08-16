@@ -1,7 +1,13 @@
 node_modules
 out
 dist
-release
+release/HTML Fast Creator.app
+release/mac-arm64
+release/win-unpacked
+release/*.yml
+release/*.yaml
+release/*.blockmap
+release/*.zip
 .DS_Store
 *.log
 *.tsbuildinfo
