@@ -1,11 +1,12 @@
 import XLSX from 'xlsx'
 import type { ConversionOptions, ConversionResult } from '../../shared/types'
-import { getDesignAdvice } from '../design/designAdvisor'
-import { buildRuleBasedInsights } from '../design/insights'
-import { renderInsightsHtml } from '../design/renderers'
+import { buildSemanticInsights } from '../design/insights'
+import { normalizeExcelContent } from '../design/normalizers'
+import { prepareDesign } from '../design/prepareDesign'
+import { applyAiDesign } from '../design/aiDesigner'
 import type { DataTable, NormalizedContent } from '../design/types'
 import { buildStandaloneHtml } from '../theme'
-import { escapeHtml, titleFromPath } from '../utils'
+import { titleFromPath } from '../utils'
 
 export async function convertExcel(
   filePath: string,
@@ -13,6 +14,7 @@ export async function convertExcel(
 ): Promise<ConversionResult> {
   const workbook = XLSX.readFile(filePath, { cellStyles: true })
   const sheetNames = workbook.SheetNames
+  const title = titleFromPath(filePath)
 
   const tables: DataTable[] = sheetNames.map((name) => {
     const rawRows = XLSX.utils.sheet_to_json<unknown[]>(workbook.Sheets[name], {
@@ -33,54 +35,54 @@ export async function convertExcel(
     }
   })
 
-  const content: NormalizedContent = {
-    title: titleFromPath(filePath),
-    sourceFormat: 'excel',
-    sections: sheetNames.map((name, index) => ({
-      id: `sheet-${index}`,
-      level: 1,
-      title: name,
-      body: `工作表 ${name}`
-    })),
-    tables,
-    metrics: [],
-    images: []
+  const content: NormalizedContent = normalizeExcelContent(title, tables)
+
+  const design = prepareDesign(content, options)
+  const insights = buildSemanticInsights(content, design.analysis)
+  const aiDesign = await applyAiDesign({ content, design, insights, options })
+  if (!aiDesign.recipe.contentHtml.trim()) {
+    throw new Error('AI 没有返回完整正文布局，请重新生成或换用非 reasoning 模型。')
   }
-
-  const advice = getDesignAdvice('excel', options.theme)
-  const insights = buildRuleBasedInsights(content)
-  const insightHtml = renderInsightsHtml(insights, advice)
-
-  const tabs = sheetNames
-    .map(
-      (name, index) =>
-        `<button class="sheet-tab ${index === 0 ? 'is-active' : ''}" data-target="sheet-${index}">${escapeHtml(name)}</button>`
-    )
-    .join('')
-
-  const panels = sheetNames
-    .map((name, index) => {
-      const table = XLSX.utils.sheet_to_html(workbook.Sheets[name], {
-        id: `sheet-table-${index}`,
-        editable: false
-      })
-      return `<section class="sheet-panel ${index === 0 ? 'is-active' : ''}" id="sheet-${index}">
-        <div class="table-wrap">${table}</div>
-      </section>`
-    })
-    .join('')
 
   return {
     html: buildStandaloneHtml({
-      title: titleFromPath(filePath),
-      body: `${insightHtml}<div class="sheet-tabs">${tabs}</div>${panels}`,
-      options,
+      title,
+      body: aiDesign.recipe.contentHtml,
+      options: design.resolvedOptions,
       format: 'Excel',
-      extraBodyClass: 'excel-document'
+      extraBodyClass: 'excel-document',
+      tokens: aiDesign.tokens,
+      template: aiDesign.template,
+      analysis: design.analysis,
+      resolvedTheme: design.resolvedTheme,
+      aiDesign: {
+        css: aiDesign.recipe.css,
+        layoutClass: aiDesign.recipe.layoutClass,
+        coverHtml: aiDesign.recipe.coverHtml,
+        themeName: aiDesign.recipe.themeName,
+        templateName: aiDesign.recipe.templateName,
+        documentType: aiDesign.recipe.documentType,
+        audience: aiDesign.recipe.audience,
+        notes: aiDesign.recipe.notes
+      }
     }),
-    title: titleFromPath(filePath),
+    title,
     format: 'excel',
     warnings: [],
-    sheetCount: sheetNames.length
+    sheetCount: sheetNames.length,
+    aiGenerated: true,
+    aiDesign: {
+      themeName: aiDesign.recipe.themeName,
+      templateName: aiDesign.recipe.templateName,
+      layoutClass: aiDesign.recipe.layoutClass,
+      notes: aiDesign.recipe.notes
+    },
+    analysis: {
+      documentType: design.analysis.documentTypeLabel,
+      audience: design.analysis.audienceLabel,
+      coreFocus: design.analysis.coreFocus,
+      templateId: design.template.id,
+      templateName: design.template.name
+    }
   }
 }

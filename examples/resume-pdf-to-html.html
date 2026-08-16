@@ -1,10 +1,28 @@
-import type { ConversionOptions, OutputTheme } from '../shared/types'
-import { themeTokens } from './design/themeRecipes'
-import type { BeautifulTemplateRecipe, DocumentAnalysis } from './design/types'
-import { escapeHtml } from './utils'
-
-function baseCss(): string {
-  return `
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>刘三_清华大学_生物_001</title>
+  <style>
+    :root { 
+      --bg: #f6f8fa;
+      --surface: #ffffff;
+      --surface-2: #eef2f6;
+      --text: #1e293b;
+      --muted: #64748b;
+      --accent: #0f766e;
+      --accent-soft: #ccfbf1;
+      --border: #dbe3ec;
+      --code-bg: #0f172a;
+      --code-text: #e2e8f0;
+      --radius: 8px;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.07);
+      --font-body: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      --font-heading: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+     }
+    
+    
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body {
@@ -200,25 +218,8 @@ function baseCss(): string {
       .doc-cover { margin-top: 0; padding-top: 36px; }
       .page { padding: 24px 18px; }
     }
-  `
-}
-
-function darkCss(): string {
-  return `
-    :root {
-      --bg: #0f131a;
-      --surface: #171d26;
-      --surface-2: #202936;
-      --text: #e7edf5;
-      --muted: #94a1b2;
-      --border: #2c3644;
-      --shadow: 0 16px 46px rgba(0, 0, 0, 0.28);
-    }
-  `
-}
-
-function refinedCss(): string {
-  return `
+  
+    
     :root {
       --font-ui: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
       --font-serif: "Source Han Serif SC", "Songti SC", "Noto Serif CJK SC", Georgia, serif;
@@ -870,22 +871,12 @@ function refinedCss(): string {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
-  `
-}
-
-function templateCss(template: BeautifulTemplateRecipe, analysis: DocumentAnalysis): string {
-  const contentMaxByLayout: Record<BeautifulTemplateRecipe['layoutClass'], string> = {
-    'layout-editorial': '900px',
-    'layout-report': '1180px',
-    'layout-dashboard': '1240px',
-    'layout-print': '880px'
-  }
-
-  return `
-    body[data-template="${template.id}"] {
-      --content-max: ${contentMaxByLayout[template.layoutClass] ?? '960px'};
-      --font-heading: ${template.typography.headingFont};
-      --font-mono: ${template.typography.monoFont};
+  
+    
+    body[data-template="blue-professional"] {
+      --content-max: 1180px;
+      --font-heading: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      --font-mono: "SFMono-Regular", "Cascadia Code", "JetBrains Mono", Consolas, monospace;
     }
 
     body[data-document-type="data-report"] .content,
@@ -961,11 +952,24 @@ function templateCss(template: BeautifulTemplateRecipe, analysis: DocumentAnalys
     body[data-template="capsule"] .kpi-card {
       border-radius: 18px;
     }
-  `
-}
-
-function runtimeScript(options: ConversionOptions): string {
-  return `
+  
+    body[data-ai-designed="true"] { --bg: #f5f7fa; --surface: #ffffff; --surface-2: #eef2f6; --text: #1f2937; --muted: #6b7280; --accent: #1e5eff; --accent-soft: #e8efff; --border: #d1d9e6; --code-bg: #f0f4f8; --code-text: #1f2937; --radius: 12px; --shadow: 0 8px 24px rgba(15, 23, 42, 0.06); --font-body: 'Noto Sans SC', 'Source Han Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif; --font-heading: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'SimSun', serif; --font-mono: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace; --content-max: 1080px; }
+    .doc-cover { background: var(--surface); border-bottom: 3px solid var(--accent); padding: 48px 32px; margin-bottom: 40px; border-radius: var(--radius); box-shadow: var(--shadow); } .cover-inner { max-width: var(--content-max); margin: 0 auto; } .cover-kicker { font-family: var(--font-body); font-size: 13px; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; margin-bottom: 12px; font-weight: 600; } .cover-title { font-family: var(--font-heading); font-size: 42px; font-weight: 700; color: var(--text); margin: 0 0 8px 0; line-height: 1.2; } .cover-subtitle { font-family: var(--font-body); font-size: 18px; color: var(--muted); margin: 0 0 20px 0; } .cover-meta { display: flex; gap: 24px; flex-wrap: wrap; font-family: var(--font-mono); font-size: 14px; color: var(--text); margin-bottom: 20px; } .cover-meta span { background: var(--surface-2); padding: 6px 14px; border-radius: 20px; } .cover-tags { display: flex; gap: 10px; flex-wrap: wrap; } .cover-tags span { font-family: var(--font-body); font-size: 13px; color: var(--accent); background: var(--accent-soft); padding: 4px 12px; border-radius: 16px; font-weight: 500; } .profile-summary { margin-bottom: 40px; } .summary-card { display: flex; gap: 20px; background: var(--surface); border-radius: var(--radius); padding: 28px 32px; box-shadow: var(--shadow); border-left: 4px solid var(--accent); } .summary-icon { font-family: var(--font-heading); font-size: 28px; color: var(--accent); background: var(--accent-soft); width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; } .summary-text h2 { font-family: var(--font-heading); font-size: 22px; margin: 0 0 12px 0; color: var(--text); } .summary-text p { font-family: var(--font-body); font-size: 15px; line-height: 1.8; color: var(--text); margin: 0; } .contact-tools { display: grid; grid-template-columns: 1fr 1.5fr; gap: 24px; margin-bottom: 40px; } .contact-block, .tools-block { background: var(--surface); border-radius: var(--radius); padding: 24px 28px; box-shadow: var(--shadow); } .contact-block h2, .tools-block h2 { font-family: var(--font-heading); font-size: 18px; margin: 0 0 16px 0; color: var(--text); border-bottom: 2px solid var(--border); padding-bottom: 10px; } .contact-list { list-style: none; padding: 0; margin: 0; } .contact-list li { display: flex; align-items: center; gap: 12px; padding: 8px 0; font-family: var(--font-body); font-size: 14px; } .contact-list .label { color: var(--muted); min-width: 40px; font-weight: 500; } .contact-list .value { font-family: var(--font-mono); color: var(--text); } .tools-grid { display: flex; flex-wrap: wrap; gap: 10px; } .tool-chip { font-family: var(--font-mono); font-size: 13px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 20px; padding: 6px 14px; color: var(--text); } .award-section { margin-bottom: 40px; } .award-banner { display: flex; align-items: center; gap: 20px; background: var(--accent-soft); border: 1px solid var(--accent); border-radius: var(--radius); padding: 20px 28px; } .award-icon { font-size: 32px; } .award-banner h2 { font-family: var(--font-heading); font-size: 20px; margin: 0 0 4px 0; color: var(--text); } .award-item { font-family: var(--font-body); font-size: 15px; color: var(--text); margin: 0; font-weight: 500; } .experience-section { margin-bottom: 40px; } .section-heading { margin-bottom: 20px; } .section-heading h2 { font-family: var(--font-heading); font-size: 24px; color: var(--text); margin: 0; padding-left: 16px; border-left: 4px solid var(--accent); } .experience-card { background: var(--surface); border-radius: var(--radius); padding: 28px 32px; margin-bottom: 20px; box-shadow: var(--shadow); } .exp-header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; margin-bottom: 16px; } .exp-header h3 { font-family: var(--font-heading); font-size: 18px; color: var(--text); margin: 0; } .exp-role { font-family: var(--font-body); font-size: 14px; color: var(--accent); font-weight: 500; } .exp-date { font-family: var(--font-mono); font-size: 13px; color: var(--muted); margin-left: auto; } .exp-list { list-style: none; padding: 0; margin: 0; } .exp-list li { font-family: var(--font-body); font-size: 14px; line-height: 1.8; color: var(--text); padding: 8px 0 8px 24px; position: relative; border-bottom: 1px solid var(--border); } .exp-list li:last-child { border-bottom: none; } .exp-list li::before { content: "▸"; position: absolute; left: 0; color: var(--accent); font-size: 16px; } .exp-list strong { color: var(--text); font-weight: 600; } .highlight-stat { font-family: var(--font-mono); font-weight: 700; color: var(--accent); background: var(--accent-soft); padding: 1px 6px; border-radius: 4px; } .p-value { font-family: var(--font-mono); font-weight: 700; color: var(--accent); } .campus-section { margin-bottom: 40px; } .campus-card { background: var(--surface); border-radius: var(--radius); padding: 24px 32px; box-shadow: var(--shadow); } .campus-card p { font-family: var(--font-body); font-size: 15px; line-height: 1.8; color: var(--text); margin: 0; } .strengths-section { margin-bottom: 20px; } .strengths-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; } .strength-item { background: var(--surface); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); border-top: 3px solid var(--accent); } .strength-num { font-family: var(--font-mono); font-size: 14px; color: var(--accent); font-weight: 700; } .strength-item h3 { font-family: var(--font-heading); font-size: 17px; color: var(--text); margin: 8px 0 10px 0; } .strength-item p { font-family: var(--font-body); font-size: 14px; line-height: 1.7; color: var(--muted); margin: 0; } @media (max-width: 768px) { .contact-tools { grid-template-columns: 1fr; } .strengths-grid { grid-template-columns: 1fr; } .exp-header { flex-direction: column; gap: 4px; } .exp-date { margin-left: 0; } .cover-title { font-size: 32px; } .cover-meta { flex-direction: column; gap: 8px; } .summary-card { flex-direction: column; } } @media (max-width: 375px) { .doc-cover { padding: 32px 20px; } .experience-card, .campus-card, .contact-block, .tools-block { padding: 20px; } .exp-list li { padding-left: 20px; } }
+  </style>
+</head>
+<body data-theme="business" data-template="blue-professional" data-document-type="report" data-format="pdf" data-ai-layout="layout-report" data-ai-designed="true">
+  <div class="reading-progress"></div>
+  <main class="app-shell">
+    <header class="doc-cover"><div class="cover-inner"><div class="cover-kicker">清华大学 · 生命科学学院</div><h1 class="cover-title">刘三</h1><p class="cover-subtitle">2022级（大四） · 生物科学专业</p><div class="cover-meta"><span>电话 138-0000-0000</span><span>邮箱 liu3@mails.tsinghua.edu.cn</span></div><div class="cover-tags"><span>分子生物学</span><span>细胞生物学</span><span>AI辅助科研</span></div></div></header>
+    <div class="layout">
+      
+      <article class="content pdf-document">
+        <section class="profile-summary"><div class="summary-card"><div class="summary-icon">概</div><div class="summary-text"><h2>个人概览</h2><p>刘三，清华大学 2022 级（大四）生物科学专业在读。具备扎实的分子生物学与细胞生物学实验功底，能够独立完成从细胞培养、药物处理到分子检测的完整实验流程。擅长将 AI 工具融入实验方案设计与数据分析环节，形成了高效的「实验-分析-验证」工作闭环，日常实验效率提升 30–45%。注重实验数据的真实性和可重复性，具备良好的实验记录习惯和团队协作意识，能够在多学科交叉环境中快速学习与适应。</p></div></div></section><section class="contact-tools"><div class="contact-block"><h2>联系方式</h2><ul class="contact-list"><li><span class="label">电话</span><span class="value">138-0000-0000</span></li><li><span class="label">邮箱</span><span class="value">liu3@mails.tsinghua.edu.cn</span></li></ul></div><div class="tools-block"><h2>分析工具与数据库</h2><div class="tools-grid"><span class="tool-chip">GraphPad Prism</span><span class="tool-chip">ImageJ</span><span class="tool-chip">SPSS</span><span class="tool-chip">R 语言</span><span class="tool-chip">NCBI BLAST</span><span class="tool-chip">PDB 蛋白数据库</span><span class="tool-chip">DrugBank</span><span class="tool-chip">Cytoscape</span></div></div></section><section class="award-section"><div class="award-banner"><span class="award-icon">🏆</span><div><h2>竞赛与奖项</h2><p class="award-item">全国大学生生命科学竞赛（科学探究类） 三等奖</p></div></div></section><section class="experience-section"><div class="section-heading"><h2>实习与项目经历</h2></div><div class="experience-card"><div class="exp-header"><h3>保定华康生物医药科技有限公司</h3><span class="exp-role">药物筛选实验实习生</span><span class="exp-date">2025.07 – 2025.10</span></div><ul class="exp-list"><li><strong>小分子激酶抑制剂活性筛选：</strong>独立完成 40 余组肿瘤细胞系的 CCK-8 增殖抑制测定与 IC₅₀ 计算。借助 AI 工具优化加样方案与数据分析流程，显著降低批间变异系数，实验效率提升约 <span class="highlight-stat">35%</span>。</li><li><strong>细胞凋亡流式检测：</strong>使用 Annexin V-FITC/PI 双染法对 3 个浓度梯度共 24 份样本进行定量分析，结果经 GraphPad Prism 双向方差分析显示处理组与对照组间凋亡率差异具有统计学意义（<span class="p-value">p &lt; 0.05</span>）。</li><li><strong>SOP 文档修订：</strong>针对细胞培养传代与冻存复苏流程建立标准化操作记录模板，统一组内 5 名实验员的记录规范，减少因操作差异导致的重复实验。</li></ul></div><div class="experience-card"><div class="exp-header"><h3>毕业设计课题</h3><span class="exp-role">天然黄酮类化合物抗肿瘤活性筛选及分子机制初步研究</span><span class="exp-date">2025.10 – 至今</span></div><ul class="exp-list"><li><strong>活性筛选模型构建：</strong>针对芹菜素、槲皮素、山柰酚三种黄酮类化合物，构建 HepG2 与 MCF-7 两种细胞系筛选模型。使用 CCK-8 法在 5 个浓度梯度、3 个时间点下进行 60 余组增殖抑制实验，筛选出槲皮素抗肿瘤活性最优，IC₅₀ 值分别为 <span class="highlight-stat">18.5 μM（HepG2）</span>与 <span class="highlight-stat">22.3 μM（MCF-7）</span>。</li><li><strong>凋亡通路基因分析：</strong>对槲皮素处理后细胞进行 RNA 提取与 qPCR 检测，分析 Bcl-2、Bax、Caspase-3 等 6 个凋亡通路关键基因的表达变化。结合 AI 辅助的 Western blot 条带灰度定量分析，发现 Bax/Bcl-2 蛋白表达比值升高 <span class="highlight-stat">3.2 倍</span>，初步验证槲皮素通过线粒体凋亡通路诱导肿瘤细胞凋亡。</li><li><strong>数据管理体系：</strong>建立完整实验数据管理体系，使用 R 语言编写从原始数据读取到统计检验与可视化的标准化分析脚本，确保数据可追溯与可复现。</li><li><strong>团队协作：</strong>与课题组 3 位成员协作完成样品制备与数据交叉验证，定期在组会上汇报实验进展与阶段性结论，根据导师与同伴反馈调整实验方案中的药物浓度梯度设置。</li></ul></div></section><section class="campus-section"><div class="section-heading"><h2>校内经历</h2></div><div class="campus-card"><p>清华大学分子药理学实验室课题组成员，参与课题组常规实验维护与试剂管理，协助低年级同学的细胞培养与基本分子生物学实验教学。参加实验室安全管理培训并协助维护实验室生物安全台账。</p></div></section><section class="strengths-section"><div class="section-heading"><h2>个人优势</h2></div><div class="strengths-grid"><div class="strength-item"><span class="strength-num">01</span><h3>完整实验能力</h3><p>具备扎实的分子生物学与细胞生物学实验功底，能够独立完成从细胞培养、药物处理到分子检测的完整实验流程。</p></div><div class="strength-item"><span class="strength-num">02</span><h3>AI 融合创新</h3><p>擅长将 AI 工具融入实验方案设计与数据分析环节，形成高效的「实验-分析-验证」工作闭环，日常实验效率提升 30–45%。</p></div><div class="strength-item"><span class="strength-num">03</span><h3>数据严谨可靠</h3><p>注重实验数据的真实性和可重复性，具备良好的实验记录习惯和团队协作意识，能够在多学科交叉环境中快速学习与适应。</p></div></div></section>
+      </article>
+    </div>
+    <footer class="doc-footer">HTML 快速生成器 · PDF · 学术简历蓝本 · 2026/8/16</footer>
+  </main>
+  <script>
     (() => {
       const progress = document.querySelector('.reading-progress');
       if (progress) {
@@ -1030,88 +1034,6 @@ function runtimeScript(options: ConversionOptions): string {
         headings.forEach((heading) => observer.observe(heading));
       }
     })();
-  `
-}
-
-export interface BuildDocumentInput {
-  title: string
-  body: string
-  options: ConversionOptions
-  format: string
-  extraBodyClass?: string
-  tokens?: string
-  template?: BeautifulTemplateRecipe
-  analysis?: DocumentAnalysis
-  resolvedTheme?: OutputTheme
-  aiDesign?: {
-    css: string
-    layoutClass: string
-    coverHtml: string
-    themeName: string
-    templateName: string
-    documentType: string
-    audience: string
-    notes: string
-  }
-}
-
-export function buildStandaloneHtml(input: BuildDocumentInput): string {
-  const {
-    title,
-    body,
-    options,
-    format,
-    extraBodyClass = '',
-    tokens: inputTokens,
-    template,
-    analysis,
-    resolvedTheme,
-    aiDesign
-  } = input
-  const activeTheme = resolvedTheme ?? (options.theme === 'auto' ? 'editorial' : options.theme)
-  const tokens = inputTokens ?? themeTokens[activeTheme]
-  const rootTokens = aiDesign ? themeTokens[activeTheme] : tokens
-  const defaultCoverInner = `<p class="eyebrow">${escapeHtml(format)} 文档</p>
-    <h1>${escapeHtml(title)}</h1>
-    <div class="meta">
-      ${analysis ? `<span>${escapeHtml(analysis.documentTypeLabel)}</span><span>${escapeHtml(analysis.audienceLabel)}</span>` : ''}
-      ${template ? `<span>模板参考 · ${escapeHtml(template.name)}</span>` : ''}
-    </div>`
-  const cover = options.includeCover
-    ? `<header class="doc-cover">${aiDesign?.coverHtml || defaultCoverInner}</header>`
-    : ''
-  const toc = options.includeToc ? '<nav class="toc" id="toc"></nav>' : ''
-  const layoutClass = options.includeToc ? 'layout with-toc' : 'layout'
-
-  return `<!doctype html>
-<html lang="zh-CN">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>${escapeHtml(title)}</title>
-  <style>
-    :root { ${rootTokens} }
-    ${options.darkMode && !aiDesign ? darkCss() : ''}
-    ${baseCss()}
-    ${refinedCss()}
-    ${template && analysis ? templateCss(template, analysis) : ''}
-    ${aiDesign ? `body[data-ai-designed="true"] { ${tokens} }` : ''}
-    ${aiDesign?.css || ''}
-  </style>
-</head>
-<body data-theme="${activeTheme}" data-template="${template?.id ?? ''}" data-document-type="${escapeHtml(aiDesign?.documentType || analysis?.documentType || '')}" data-format="${format.toLowerCase()}" data-ai-layout="${escapeHtml(aiDesign?.layoutClass || '')}" data-ai-designed="${aiDesign ? 'true' : 'false'}">
-  <div class="reading-progress"></div>
-  <main class="app-shell">
-    ${cover}
-    <div class="${layoutClass}">
-      ${toc}
-      <article class="content ${extraBodyClass}">
-        ${body}
-      </article>
-    </div>
-    <footer class="doc-footer">HTML 快速生成器 · ${escapeHtml(format)}${aiDesign ? ` · ${escapeHtml(aiDesign.themeName)}` : ''} · ${new Date().toLocaleDateString()}</footer>
-  </main>
-  <script>${runtimeScript(options)}</script>
+  </script>
 </body>
-</html>`
-}
+</html>

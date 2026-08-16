@@ -1,10 +1,28 @@
-import type { ConversionOptions, OutputTheme } from '../shared/types'
-import { themeTokens } from './design/themeRecipes'
-import type { BeautifulTemplateRecipe, DocumentAnalysis } from './design/types'
-import { escapeHtml } from './utils'
-
-function baseCss(): string {
-  return `
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>sample-data</title>
+  <style>
+    :root { 
+      --bg: #f6f8fa;
+      --surface: #ffffff;
+      --surface-2: #eef2f6;
+      --text: #1e293b;
+      --muted: #64748b;
+      --accent: #0f766e;
+      --accent-soft: #ccfbf1;
+      --border: #dbe3ec;
+      --code-bg: #0f172a;
+      --code-text: #e2e8f0;
+      --radius: 8px;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.07);
+      --font-body: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      --font-heading: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+     }
+    
+    
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body {
@@ -200,25 +218,8 @@ function baseCss(): string {
       .doc-cover { margin-top: 0; padding-top: 36px; }
       .page { padding: 24px 18px; }
     }
-  `
-}
-
-function darkCss(): string {
-  return `
-    :root {
-      --bg: #0f131a;
-      --surface: #171d26;
-      --surface-2: #202936;
-      --text: #e7edf5;
-      --muted: #94a1b2;
-      --border: #2c3644;
-      --shadow: 0 16px 46px rgba(0, 0, 0, 0.28);
-    }
-  `
-}
-
-function refinedCss(): string {
-  return `
+  
+    
     :root {
       --font-ui: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
       --font-serif: "Source Han Serif SC", "Songti SC", "Noto Serif CJK SC", Georgia, serif;
@@ -870,22 +871,12 @@ function refinedCss(): string {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
-  `
-}
-
-function templateCss(template: BeautifulTemplateRecipe, analysis: DocumentAnalysis): string {
-  const contentMaxByLayout: Record<BeautifulTemplateRecipe['layoutClass'], string> = {
-    'layout-editorial': '900px',
-    'layout-report': '1180px',
-    'layout-dashboard': '1240px',
-    'layout-print': '880px'
-  }
-
-  return `
-    body[data-template="${template.id}"] {
-      --content-max: ${contentMaxByLayout[template.layoutClass] ?? '960px'};
-      --font-heading: ${template.typography.headingFont};
-      --font-mono: ${template.typography.monoFont};
+  
+    
+    body[data-template="blue-professional"] {
+      --content-max: 1240px;
+      --font-heading: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      --font-mono: "SFMono-Regular", "Cascadia Code", "JetBrains Mono", Consolas, monospace;
     }
 
     body[data-document-type="data-report"] .content,
@@ -961,11 +952,24 @@ function templateCss(template: BeautifulTemplateRecipe, analysis: DocumentAnalys
     body[data-template="capsule"] .kpi-card {
       border-radius: 18px;
     }
-  `
-}
-
-function runtimeScript(options: ConversionOptions): string {
-  return `
+  
+    body[data-ai-designed="true"] { --bg: #0a0e17; --surface: #111827; --surface-2: #1a2332; --text: #e5e7eb; --muted: #9ca3af; --accent: #22d3ee; --accent-soft: rgba(34, 211, 238, 0.12); --border: #1f2937; --code-bg: #0d1420; --code-text: #22d3ee; --radius: 12px; --shadow: 0 8px 32px rgba(0, 0, 0, 0.35); --font-body: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif; --font-heading: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif; --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace; --content-max: 1280px; }
+    .cover-meta { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; } .cover-tag { display: inline-block; padding: 4px 14px; border: 1px solid var(--border); border-radius: 999px; font-size: 12px; color: var(--muted); letter-spacing: 0.05em; } .cover-title { font-size: clamp(28px, 5vw, 48px); font-weight: 700; color: var(--text); margin: 0 0 12px 0; letter-spacing: -0.02em; } .cover-subtitle { font-size: 16px; color: var(--muted); margin: 0 0 32px 0; } .cover-stats { display: flex; gap: 40px; flex-wrap: wrap; } .cover-stat { display: flex; flex-direction: column; gap: 4px; } .cover-stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; } .cover-stat-value { font-size: 28px; font-weight: 700; color: var(--text); font-family: var(--font-mono); } .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 32px; } .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); } .kpi-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; } .kpi-label { font-size: 13px; color: var(--muted); font-weight: 500; } .kpi-trend { font-size: 12px; padding: 2px 8px; border-radius: 999px; font-weight: 500; } .kpi-trend.up { background: rgba(16, 185, 129, 0.15); color: #34d399; } .kpi-trend.flat { background: rgba(156, 163, 175, 0.15); color: var(--muted); } .kpi-value { font-size: 32px; font-weight: 700; color: var(--text); font-family: var(--font-mono); margin-bottom: 12px; letter-spacing: -0.02em; } .kpi-footer { display: flex; gap: 16px; flex-wrap: wrap; } .kpi-sub { font-size: 12px; color: var(--muted); } .chart-section { margin-bottom: 32px; } .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; } .section-header h2 { font-size: 20px; font-weight: 600; color: var(--text); margin: 0; } .section-badge { font-size: 12px; color: var(--accent); background: var(--accent-soft); padding: 3px 10px; border-radius: 999px; border: 1px solid rgba(34, 211, 238, 0.3); } .chart-container { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); } .line-chart { display: flex; flex-direction: column; gap: 8px; } .chart-y-axis { display: flex; flex-direction: column; justify-content: space-between; height: 220px; position: absolute; left: 0; top: 0; font-size: 11px; color: var(--muted); font-family: var(--font-mono); } .chart-plot { position: relative; height: 220px; margin-left: 48px; } .chart-grid-line { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--border); } .line-svg { width: 100%; height: 220px; position: relative; z-index: 1; } .chart-x-axis { display: flex; justify-content: space-between; margin-left: 48px; font-size: 12px; color: var(--muted); } .chart-insight { display: flex; gap: 10px; align-items: flex-start; margin-top: 16px; padding: 12px 16px; background: var(--accent-soft); border-radius: 8px; border-left: 3px solid var(--accent); } .chart-insight p { margin: 0; font-size: 14px; color: var(--text); line-height: 1.6; } .insight-dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; margin-top: 6px; flex-shrink: 0; } .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px; } .data-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); } .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; } .card-header h3 { font-size: 16px; font-weight: 600; color: var(--text); margin: 0; } .row-count { font-size: 12px; color: var(--muted); background: var(--surface-2); padding: 2px 10px; border-radius: 999px; } .table-wrap { overflow-x: auto; } .data-table { width: 100%; border-collapse: collapse; font-size: 13px; } .data-table th { text-align: left; padding: 10px 12px; color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--border); white-space: nowrap; } .data-table td { padding: 10px 12px; color: var(--text); border-bottom: 1px solid var(--border); font-family: var(--font-mono); } .data-table tr:last-child td { border-bottom: none; } .data-table tbody tr:hover { background: var(--surface-2); } .table-summary { display: flex; gap: 16px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted); flex-wrap: wrap; } .status-badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; } .status-badge.done { background: rgba(16, 185, 129, 0.15); color: #34d399; } .status-badge.progress { background: rgba(34, 211, 238, 0.15); color: var(--accent); } .status-badge.planned { background: rgba(251, 191, 36, 0.15); color: #fbbf24; } .progress-bars { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; } .progress-item { display: flex; align-items: center; gap: 10px; } .progress-label { font-size: 12px; color: var(--muted); width: 70px; flex-shrink: 0; } .progress-track { flex: 1; height: 6px; background: var(--surface-2); border-radius: 999px; overflow: hidden; } .progress-fill { height: 100%; background: var(--accent); border-radius: 999px; } .progress-value { font-size: 12px; color: var(--text); font-family: var(--font-mono); width: 40px; text-align: right; } .channel-section { margin-bottom: 32px; } .channel-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; } .channel-bars { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 20px; } .bar-item { display: flex; flex-direction: column; gap: 6px; } .bar-label-row { display: flex; justify-content: space-between; align-items: center; } .bar-label { font-size: 13px; color: var(--text); font-weight: 500; } .bar-value { font-size: 13px; color: var(--accent); font-family: var(--font-mono); } .bar-track { height: 8px; background: var(--surface-2); border-radius: 999px; overflow: hidden; } .bar-fill { height: 100%; background: linear-gradient(90deg, rgba(34, 211, 238, 0.6), var(--accent)); border-radius: 999px; } .channel-summary { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 16px; } .summary-item { display: flex; flex-direction: column; gap: 4px; } .summary-label { font-size: 12px; color: var(--muted); } .summary-value { font-size: 24px; font-weight: 700; color: var(--text); font-family: var(--font-mono); } .overview-section { margin-bottom: 32px; } .overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; } .overview-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; } .overview-card h4 { font-size: 14px; font-weight: 600; color: var(--text); margin: 0 0 12px 0; } .overview-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; } .overview-list li { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--muted); line-height: 1.5; } .list-marker { color: var(--accent); font-family: var(--font-mono); flex-shrink: 0; } @media (max-width: 768px) { .data-grid { grid-template-columns: 1fr; } .channel-layout { grid-template-columns: 1fr; } .overview-grid { grid-template-columns: 1fr; } .kpi-grid { grid-template-columns: 1fr 1fr; } .chart-y-axis { display: none; } .chart-plot { margin-left: 0; } .chart-x-axis { margin-left: 0; } } @media (max-width: 480px) { .kpi-grid { grid-template-columns: 1fr; } .cover-stats { gap: 20px; } .table-wrap { margin: 0 -12px; padding: 0 12px; } }
+  </style>
+</head>
+<body data-theme="business" data-template="blue-professional" data-document-type="data-report" data-format="excel" data-ai-layout="layout-dashboard" data-ai-designed="true">
+  <div class="reading-progress"></div>
+  <main class="app-shell">
+    <header class="doc-cover"><div class="cover-meta"><span class="cover-tag">数据报告</span><span class="cover-tag">3 个工作表</span></div><h1 class="cover-title">sample-data</h1><p class="cover-subtitle">销售数据 · 项目进度 · 渠道占比</p><div class="cover-stats"><div class="cover-stat"><span class="cover-stat-label">总行数</span><span class="cover-stat-value">15</span></div><div class="cover-stat"><span class="cover-stat-label">数值字段</span><span class="cover-stat-value">5</span></div><div class="cover-stat"><span class="cover-stat-label">总收入</span><span class="cover-stat-value">930,000</span></div></div></header>
+    <div class="layout">
+      
+      <article class="content excel-document">
+        <section class="kpi-grid" aria-label="核心指标"><div class="kpi-card"><div class="kpi-header"><span class="kpi-label">总收入</span><span class="kpi-trend up">↑ 持续增长</span></div><div class="kpi-value">930,000</div><div class="kpi-footer"><span class="kpi-sub">均值 155,000</span><span class="kpi-sub">最高 190,000</span></div></div><div class="kpi-card"><div class="kpi-header"><span class="kpi-label">总成本</span><span class="kpi-trend flat">→ 稳定</span></div><div class="kpi-value">526,000</div><div class="kpi-footer"><span class="kpi-sub">均值 87,666.67</span><span class="kpi-sub">最高 98,000</span></div></div><div class="kpi-card"><div class="kpi-header"><span class="kpi-label">总利润</span><span class="kpi-trend up">↑ 增长</span></div><div class="kpi-value">404,000</div><div class="kpi-footer"><span class="kpi-sub">均值 67,333.33</span><span class="kpi-sub">最高 92,000</span></div></div><div class="kpi-card"><div class="kpi-header"><span class="kpi-label">总成交额</span><span class="kpi-trend flat">→ 稳定</span></div><div class="kpi-value">480,000</div><div class="kpi-footer"><span class="kpi-sub">均值 120,000</span><span class="kpi-sub">最高 180,000</span></div></div></section><section class="chart-section" aria-label="销售趋势"><div class="section-header"><h2>销售趋势分析</h2><span class="section-badge">销售数据</span></div><div class="chart-container"><div class="line-chart" role="img" aria-label="1月至6月收入持续增长，从120000增长至190000"><div class="chart-y-axis"><span>200k</span><span>150k</span><span>100k</span><span>50k</span><span>0</span></div><div class="chart-plot"><div class="chart-grid-line" style="bottom: 0%"></div><div class="chart-grid-line" style="bottom: 25%"></div><div class="chart-grid-line" style="bottom: 50%"></div><div class="chart-grid-line" style="bottom: 75%"></div><div class="chart-grid-line" style="bottom: 100%"></div><svg viewBox="0 0 600 220" preserveAspectRatio="none" class="line-svg"><polyline points="20,180 115,155 210,130 305,105 400,80 580,55" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="180" r="5" fill="var(--accent)"/><circle cx="115" cy="155" r="5" fill="var(--accent)"/><circle cx="210" cy="130" r="5" fill="var(--accent)"/><circle cx="305" cy="105" r="5" fill="var(--accent)"/><circle cx="400" cy="80" r="5" fill="var(--accent)"/><circle cx="580" cy="55" r="5" fill="var(--accent)"/></svg></div><div class="chart-x-axis"><span>1月</span><span>2月</span><span>3月</span><span>4月</span><span>5月</span><span>6月</span></div></div></div><div class="chart-insight"><span class="insight-dot"></span><p>收入从 1 月的 120,000 持续增长至 6 月的 190,000，累计增长 58.3%，整体呈稳定上升趋势。</p></div></section><section class="data-grid" aria-label="数据明细"><div class="data-card"><div class="card-header"><h3>销售数据明细</h3><span class="row-count">6 行</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>月份</th><th>收入</th><th>成本</th><th>利润</th></tr></thead><tbody><tr><td>1月</td><td>120,000</td><td>78,000</td><td>42,000</td></tr><tr><td>2月</td><td>135,000</td><td>81,000</td><td>54,000</td></tr><tr><td>3月</td><td>148,000</td><td>86,000</td><td>62,000</td></tr><tr><td>4月</td><td>162,000</td><td>90,000</td><td>72,000</td></tr><tr><td>5月</td><td>175,000</td><td>93,000</td><td>82,000</td></tr><tr><td>6月</td><td>190,000</td><td>98,000</td><td>92,000</td></tr></tbody></table></div><div class="table-summary"><span>收入合计 930,000</span><span>成本合计 526,000</span><span>利润合计 404,000</span></div></div><div class="data-card"><div class="card-header"><h3>项目进度</h3><span class="row-count">5 行</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>项目</th><th>状态</th><th>完成度</th><th>负责人</th></tr></thead><tbody><tr><td>首页改版</td><td><span class="status-badge done">已完成</span></td><td>100%</td><td>A</td></tr><tr><td>转换器优化</td><td><span class="status-badge progress">进行中</span></td><td>72%</td><td>B</td></tr><tr><td>图表引擎</td><td><span class="status-badge progress">进行中</span></td><td>58%</td><td>C</td></tr><tr><td>导出功能</td><td><span class="status-badge done">已完成</span></td><td>100%</td><td>A</td></tr><tr><td>AI 分析</td><td><span class="status-badge planned">规划中</span></td><td>20%</td><td>D</td></tr></tbody></table></div><div class="progress-bars"><div class="progress-item"><span class="progress-label">首页改版</span><div class="progress-track"><div class="progress-fill" style="width: 100%"></div></div><span class="progress-value">100%</span></div><div class="progress-item"><span class="progress-label">转换器优化</span><div class="progress-track"><div class="progress-fill" style="width: 72%"></div></div><span class="progress-value">72%</span></div><div class="progress-item"><span class="progress-label">图表引擎</span><div class="progress-track"><div class="progress-fill" style="width: 58%"></div></div><span class="progress-value">58%</span></div><div class="progress-item"><span class="progress-label">导出功能</span><div class="progress-track"><div class="progress-fill" style="width: 100%"></div></div><span class="progress-value">100%</span></div><div class="progress-item"><span class="progress-label">AI 分析</span><div class="progress-track"><div class="progress-fill" style="width: 20%"></div></div><span class="progress-value">20%</span></div></div></div></section><section class="channel-section" aria-label="渠道占比"><div class="section-header"><h2>渠道成交额分布</h2><span class="section-badge">渠道占比</span></div><div class="channel-layout"><div class="channel-bars"><div class="bar-item"><div class="bar-label-row"><span class="bar-label">自然搜索</span><span class="bar-value">180,000</span></div><div class="bar-track"><div class="bar-fill" style="width: 100%"></div></div></div><div class="bar-item"><div class="bar-label-row"><span class="bar-label">广告投放</span><span class="bar-value">132,000</span></div><div class="bar-track"><div class="bar-fill" style="width: 73.3%"></div></div></div><div class="bar-item"><div class="bar-label-row"><span class="bar-label">社交媒体</span><span class="bar-value">96,000</span></div><div class="bar-track"><div class="bar-fill" style="width: 53.3%"></div></div></div><div class="bar-item"><div class="bar-label-row"><span class="bar-label">老客推荐</span><span class="bar-value">72,000</span></div><div class="bar-track"><div class="bar-fill" style="width: 40%"></div></div></div></div><div class="channel-summary"><div class="summary-item"><span class="summary-label">总成交额</span><span class="summary-value">480,000</span></div><div class="summary-item"><span class="summary-label">均值</span><span class="summary-value">120,000</span></div><div class="summary-item"><span class="summary-label">最高</span><span class="summary-value">180,000</span></div><div class="summary-item"><span class="summary-label">最低</span><span class="summary-value">72,000</span></div></div></div></section><section class="overview-section" aria-label="数据概览"><div class="section-header"><h2>数据概览</h2></div><div class="overview-grid"><div class="overview-card"><h4>工作表构成</h4><ul class="overview-list"><li><span class="list-marker">1</span>销售数据：月份、收入、成本、利润</li><li><span class="list-marker">2</span>项目进度：项目、状态、完成度、负责人</li><li><span class="list-marker">3</span>渠道占比：渠道、成交额</li></ul></div><div class="overview-card"><h4>数据规模</h4><ul class="overview-list"><li><span class="list-marker">•</span>共 15 行数据</li><li><span class="list-marker">•</span>5 个数值字段</li><li><span class="list-marker">•</span>3 个工作表</li></ul></div></div></section>
+      </article>
+    </div>
+    <footer class="doc-footer">HTML 快速生成器 · Excel · 深蓝数据驾驶舱 · 2026/8/16</footer>
+  </main>
+  <script>
     (() => {
       const progress = document.querySelector('.reading-progress');
       if (progress) {
@@ -1030,88 +1034,6 @@ function runtimeScript(options: ConversionOptions): string {
         headings.forEach((heading) => observer.observe(heading));
       }
     })();
-  `
-}
-
-export interface BuildDocumentInput {
-  title: string
-  body: string
-  options: ConversionOptions
-  format: string
-  extraBodyClass?: string
-  tokens?: string
-  template?: BeautifulTemplateRecipe
-  analysis?: DocumentAnalysis
-  resolvedTheme?: OutputTheme
-  aiDesign?: {
-    css: string
-    layoutClass: string
-    coverHtml: string
-    themeName: string
-    templateName: string
-    documentType: string
-    audience: string
-    notes: string
-  }
-}
-
-export function buildStandaloneHtml(input: BuildDocumentInput): string {
-  const {
-    title,
-    body,
-    options,
-    format,
-    extraBodyClass = '',
-    tokens: inputTokens,
-    template,
-    analysis,
-    resolvedTheme,
-    aiDesign
-  } = input
-  const activeTheme = resolvedTheme ?? (options.theme === 'auto' ? 'editorial' : options.theme)
-  const tokens = inputTokens ?? themeTokens[activeTheme]
-  const rootTokens = aiDesign ? themeTokens[activeTheme] : tokens
-  const defaultCoverInner = `<p class="eyebrow">${escapeHtml(format)} 文档</p>
-    <h1>${escapeHtml(title)}</h1>
-    <div class="meta">
-      ${analysis ? `<span>${escapeHtml(analysis.documentTypeLabel)}</span><span>${escapeHtml(analysis.audienceLabel)}</span>` : ''}
-      ${template ? `<span>模板参考 · ${escapeHtml(template.name)}</span>` : ''}
-    </div>`
-  const cover = options.includeCover
-    ? `<header class="doc-cover">${aiDesign?.coverHtml || defaultCoverInner}</header>`
-    : ''
-  const toc = options.includeToc ? '<nav class="toc" id="toc"></nav>' : ''
-  const layoutClass = options.includeToc ? 'layout with-toc' : 'layout'
-
-  return `<!doctype html>
-<html lang="zh-CN">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>${escapeHtml(title)}</title>
-  <style>
-    :root { ${rootTokens} }
-    ${options.darkMode && !aiDesign ? darkCss() : ''}
-    ${baseCss()}
-    ${refinedCss()}
-    ${template && analysis ? templateCss(template, analysis) : ''}
-    ${aiDesign ? `body[data-ai-designed="true"] { ${tokens} }` : ''}
-    ${aiDesign?.css || ''}
-  </style>
-</head>
-<body data-theme="${activeTheme}" data-template="${template?.id ?? ''}" data-document-type="${escapeHtml(aiDesign?.documentType || analysis?.documentType || '')}" data-format="${format.toLowerCase()}" data-ai-layout="${escapeHtml(aiDesign?.layoutClass || '')}" data-ai-designed="${aiDesign ? 'true' : 'false'}">
-  <div class="reading-progress"></div>
-  <main class="app-shell">
-    ${cover}
-    <div class="${layoutClass}">
-      ${toc}
-      <article class="content ${extraBodyClass}">
-        ${body}
-      </article>
-    </div>
-    <footer class="doc-footer">HTML 快速生成器 · ${escapeHtml(format)}${aiDesign ? ` · ${escapeHtml(aiDesign.themeName)}` : ''} · ${new Date().toLocaleDateString()}</footer>
-  </main>
-  <script>${runtimeScript(options)}</script>
+  </script>
 </body>
-</html>`
-}
+</html>

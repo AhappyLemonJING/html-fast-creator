@@ -1,10 +1,28 @@
-import type { ConversionOptions, OutputTheme } from '../shared/types'
-import { themeTokens } from './design/themeRecipes'
-import type { BeautifulTemplateRecipe, DocumentAnalysis } from './design/types'
-import { escapeHtml } from './utils'
-
-function baseCss(): string {
-  return `
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>王三</title>
+  <style>
+    :root { 
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --surface-2: #f5f5f5;
+      --text: #111111;
+      --muted: #555555;
+      --accent: #111111;
+      --accent-soft: #e6e6e6;
+      --border: #cccccc;
+      --code-bg: #f5f5f5;
+      --code-text: #111111;
+      --radius: 0;
+      --shadow: none;
+      --font-body: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      --font-heading: "Source Han Serif SC", "Songti SC", "Noto Serif CJK SC", Georgia, serif;
+     }
+    
+    
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body {
@@ -200,25 +218,8 @@ function baseCss(): string {
       .doc-cover { margin-top: 0; padding-top: 36px; }
       .page { padding: 24px 18px; }
     }
-  `
-}
-
-function darkCss(): string {
-  return `
-    :root {
-      --bg: #0f131a;
-      --surface: #171d26;
-      --surface-2: #202936;
-      --text: #e7edf5;
-      --muted: #94a1b2;
-      --border: #2c3644;
-      --shadow: 0 16px 46px rgba(0, 0, 0, 0.28);
-    }
-  `
-}
-
-function refinedCss(): string {
-  return `
+  
+    
     :root {
       --font-ui: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
       --font-serif: "Source Han Serif SC", "Songti SC", "Noto Serif CJK SC", Georgia, serif;
@@ -870,22 +871,12 @@ function refinedCss(): string {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
-  `
-}
-
-function templateCss(template: BeautifulTemplateRecipe, analysis: DocumentAnalysis): string {
-  const contentMaxByLayout: Record<BeautifulTemplateRecipe['layoutClass'], string> = {
-    'layout-editorial': '900px',
-    'layout-report': '1180px',
-    'layout-dashboard': '1240px',
-    'layout-print': '880px'
-  }
-
-  return `
-    body[data-template="${template.id}"] {
-      --content-max: ${contentMaxByLayout[template.layoutClass] ?? '960px'};
-      --font-heading: ${template.typography.headingFont};
-      --font-mono: ${template.typography.monoFont};
+  
+    
+    body[data-template="monochrome"] {
+      --content-max: 900px;
+      --font-heading: "Source Han Serif SC", "Songti SC", "Noto Serif CJK SC", Georgia, serif;
+      --font-mono: "SFMono-Regular", "Cascadia Code", "JetBrains Mono", Consolas, monospace;
     }
 
     body[data-document-type="data-report"] .content,
@@ -961,11 +952,24 @@ function templateCss(template: BeautifulTemplateRecipe, analysis: DocumentAnalys
     body[data-template="capsule"] .kpi-card {
       border-radius: 18px;
     }
-  `
-}
-
-function runtimeScript(options: ConversionOptions): string {
-  return `
+  
+    body[data-ai-designed="true"] { --bg: #FDFBF7; --surface: #FFFFFF; --surface-2: #F4F7F2; --text: #2D3A32; --muted: #6B7A70; --accent: #7A9E7E; --accent-soft: #E8F0E6; --border: #E3E8E0; --code-bg: #F4F7F2; --code-text: #4A6B4F; --radius: 16px; --shadow: 0 12px 32px rgba(45, 58, 50, 0.06); --font-body: 'Noto Sans SC', 'Source Han Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif; --font-heading: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'SimSun', serif; --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace; --content-max: 1080px; }
+    .profile-card{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:48px;padding:24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}.profile-meta{display:flex;flex-direction:column;gap:4px}.meta-label{font-size:12px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}.meta-value{font-size:15px;font-weight:600;color:var(--text)}.section-block{margin-bottom:56px}.section-heading{display:flex;align-items:baseline;gap:16px;margin-bottom:28px;padding-bottom:12px;border-bottom:2px solid var(--accent-soft)}.section-index{font-family:var(--font-mono);font-size:14px;color:var(--accent);font-weight:700}.section-heading h2{font-family:var(--font-heading);font-size:24px;color:var(--text);margin:0;letter-spacing:.02em}.award-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}.award-item{display:flex;gap:16px;padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);transition:box-shadow .2s ease}.award-item:hover{box-shadow:var(--shadow)}.award-badge{flex-shrink:0;width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:var(--accent-soft);color:var(--accent);font-size:13px;font-weight:700;border-radius:50%}.award-content h3{font-size:16px;margin:0 0 6px;color:var(--text)}.award-year{font-family:var(--font-mono);font-size:13px;color:var(--muted);font-weight:400}.award-content p{font-size:14px;line-height:1.7;color:var(--muted);margin:0}.experience-item,.project-item{margin-bottom:32px;padding:28px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}.exp-header,.project-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:8px}.exp-header h3,.project-header h3{font-family:var(--font-heading);font-size:20px;margin:0;color:var(--text)}.exp-role{font-size:14px;color:var(--muted);margin:4px 0 0}.exp-date,.project-date{font-family:var(--font-mono);font-size:13px;color:var(--accent);background:var(--accent-soft);padding:4px 12px;border-radius:20px;white-space:nowrap}.exp-list{list-style:none;padding:0;margin:0}.exp-list li{position:relative;padding-left:20px;margin-bottom:12px;font-size:15px;line-height:1.8;color:var(--text)}.exp-list li::before{content:"";position:absolute;left:0;top:12px;width:6px;height:6px;border-radius:50%;background:var(--accent)}.data-highlight{font-family:var(--font-mono);font-weight:700;color:var(--accent);background:var(--accent-soft);padding:1px 6px;border-radius:4px;font-size:14px}.skills-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}.skill-category{padding:24px;background:var(--surface-2);border-radius:var(--radius);border-left:4px solid var(--accent)}.skill-category h3{font-size:16px;margin:0 0 12px;color:var(--text)}.skill-category p{font-size:14px;line-height:1.8;color:var(--muted);margin:0}.cover-wrap{position:relative;padding:80px 48px;text-align:center;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;margin-bottom:48px}.cover-ornament{position:absolute;top:24px;left:24px;right:24px;display:flex;gap:8px}.cover-ornament span{width:8px;height:8px;border-radius:50%;background:var(--accent-soft)}.cover-ornament span:nth-child(2){background:var(--accent)}.cover-ornament span:nth-child(3){background:#E8B4B8}.cover-eyebrow{font-size:13px;letter-spacing:.12em;color:var(--muted);margin:0 0 16px;text-transform:uppercase}.cover-title{font-family:var(--font-heading);font-size:56px;color:var(--text);margin:0 0 12px;letter-spacing:.08em}.cover-subtitle{font-size:18px;color:var(--muted);margin:0 0 24px}.cover-contact{display:flex;justify-content:center;gap:24px;font-family:var(--font-mono);font-size:14px;color:var(--accent);flex-wrap:wrap}@media(max-width:768px){.profile-card{grid-template-columns:repeat(2,1fr)}.award-grid,.skills-grid{grid-template-columns:1fr}.cover-wrap{padding:48px 24px}.cover-title{font-size:40px}.exp-header,.project-header{flex-direction:column}}@media(max-width:375px){.profile-card{grid-template-columns:1fr}.cover-contact{flex-direction:column;gap:8px}.section-heading h2{font-size:20px}}
+  </style>
+</head>
+<body data-theme="print" data-template="monochrome" data-document-type="data-report" data-format="word" data-ai-layout="layout-editorial" data-ai-designed="true">
+  <div class="reading-progress"></div>
+  <main class="app-shell">
+    <header class="doc-cover"><div class="cover-wrap"><div class="cover-ornament"><span></span><span></span><span></span></div><p class="cover-eyebrow">复旦大学 · 金融学 · 研三</p><h1 class="cover-title">王三</h1><p class="cover-subtitle">求职方向：投行 / 行研 / 投资 / 风险管理</p><div class="cover-contact"><span>138-XXXX-XXXX</span><span>wangsan@fudan.edu.cn</span></div></div></header>
+    <div class="layout">
+      
+      <article class="content ">
+        <section class="profile-card"><div class="profile-meta"><span class="meta-label">姓名</span><span class="meta-value">王三</span></div><div class="profile-meta"><span class="meta-label">院校</span><span class="meta-value">复旦大学 · 金融学 · 研三</span></div><div class="profile-meta"><span class="meta-label">求职方向</span><span class="meta-value">投行 / 行研 / 投资 / 风险管理</span></div><div class="profile-meta"><span class="meta-label">联系方式</span><span class="meta-value">138-XXXX-XXXX · wangsan@fudan.edu.cn</span></div></section><section class="section-block"><div class="section-heading"><span class="section-index">01</span><h2>竞赛与奖项</h2></div><div class="award-grid"><div class="award-item"><div class="award-badge">国二</div><div class="award-content"><h3>全国大学生数学建模竞赛 <span class="award-year">2022</span></h3><p>构建多因子选股模型，利用 MATLAB 完成回测，年化超额收益达 <strong>12.3%</strong></p></div></div><div class="award-item"><div class="award-badge">冠军</div><div class="award-content"><h3>CFA 协会全球投资分析大赛 <span class="award-year">2023</span></h3><p>主导团队完成某新能源上市公司估值分析，搭建 DCF 与可比公司模型，获评“最佳估值逻辑奖”</p></div></div><div class="award-item"><div class="award-badge">一等</div><div class="award-content"><h3>复旦大学优秀学业奖学金 <span class="award-year">2021-2024</span></h3><p>连续三年获一等奖学金</p></div></div><div class="award-item"><div class="award-badge">FRM</div><div class="award-content"><h3>FRM Part I &amp; Part II <span class="award-year">2024</span></h3><p>通过全部考试</p></div></div></div></section><section class="section-block"><div class="section-heading"><span class="section-index">02</span><h2>实习经历</h2></div><div class="experience-item"><div class="exp-header"><div><h3>华泰证券研究所</h3><p class="exp-role">金融工程实习生</p></div><span class="exp-date">2024.03 - 2024.08</span></div><ul class="exp-list"><li><strong>因子研究与策略回测：</strong>独立开发基于高频数据的动量与反转因子，使用 Python（Pandas/NumPy）处理每日约 <span class="data-highlight">200万条</span> Tick 数据，构建多因子 IC 分析框架，因子 IR 达 <span class="data-highlight">0.85</span>，入选部门季度重点策略池</li><li><strong>量化报告撰写：</strong>完成《基于机器学习的行业轮动策略研究》专题报告，运用 XGBoost 与 LSTM 模型预测行业收益排名，策略年化超额收益 <span class="data-highlight">15.2%</span>，回撤控制在 <span class="data-highlight">6%</span> 以内，获首席分析师签发推送至机构客户</li><li><strong>自动化报表体系搭建：</strong>利用 Python 脚本与 SQL 自动化完成每日市场数据清洗、因子计算及可视化看板（Tableau），将团队日报生成时间从 2 小时压缩至 15 分钟，效率提升 <span class="data-highlight">87%</span></li></ul></div><div class="experience-item"><div class="exp-header"><div><h3>中金公司</h3><p class="exp-role">投资银行部实习生</p></div><span class="exp-date">2023.06 - 2023.12</span></div><ul class="exp-list"><li><strong>项目执行支持：</strong>参与某科创板 IPO 项目（募资规模约 <span class="data-highlight">25亿元</span>），负责财务尽调底稿整理与行业可比公司分析，完成近 3 年财务数据核查（收入/成本/毛利率波动分析），协助发现并修正收入确认口径差异，避免潜在合规风险</li><li><strong>估值模型搭建：</strong>独立搭建 DCF 及可比估值模型，完成对标的公司核心业务线收入预测与敏感性分析，估值区间最终被承销团队采纳用于定价参考</li><li><strong>材料制作与沟通：</strong>协助制作招股说明书业务与技术章节，完成 3 轮问询回复材料整理，对接会计师事务所与律所完成数据交叉验证，保障项目按时过会</li></ul></div></section><section class="section-block"><div class="section-heading"><span class="section-index">03</span><h2>项目经历</h2></div><div class="project-item"><div class="project-header"><h3>某消费金融公司信用风险评分卡项目</h3><span class="project-date">2024.02 - 2024.05</span></div><ul class="exp-list"><li><strong>数据清洗与特征工程：</strong>使用 Python 处理 <span class="data-highlight">50万+</span> 用户信贷记录数据，完成缺失值插补、WOE 编码与 IV 值筛选，构建包含 <span class="data-highlight">32个</span> 特征的风险指标体系</li><li><strong>模型开发与验证：</strong>基于逻辑回归与 XGBoost 开发 A 卡与 B 卡评分模型，模型 KS 值达 <span class="data-highlight">0.38</span>，AUC 为 <span class="data-highlight">0.82</span>，区分度优于行业基准。使用 LIME 进行模型可解释性分析，输出特征贡献度报告</li><li><strong>策略落地建议：</strong>结合模型结果提出差异化授信策略，模拟测算可降低坏账率约 <span class="data-highlight">1.5个百分点</span>，获风控总监书面认可</li></ul></div><div class="project-item"><div class="project-header"><h3>基于 ESG 因子的多资产配置策略研究</h3><span class="project-date">2023.09 - 2024.01</span></div><ul class="exp-list"><li><strong>数据采集与因子构建：</strong>爬取 A 股上市公司 ESG 评级数据（Wind/商道融绿），构建 E/S/G 三大维度共 <span class="data-highlight">18个</span> 细分指标，使用主成分分析降维生成综合 ESG 得分</li><li><strong>策略回测与优化：</strong>在 Black-Litterman 框架下嵌入 ESG 因子，构建 ESG 优化组合，回测近 5 年表现，年化收益 <span class="data-highlight">7.8%</span>，夏普比率 <span class="data-highlight">1.25</span>，显著优于基准沪深 300（年化收益 4.2%，夏普 0.85）</li><li><strong>报告与汇报：</strong>撰写 30 页策略研究报告，在学院学术论坛展示，获教授推荐投稿至《金融研究》期刊</li></ul></div></section><section class="section-block"><div class="section-heading"><span class="section-index">04</span><h2>校内经历</h2></div><div class="experience-item"><div class="exp-header"><div><h3>复旦大学金融协会</h3><p class="exp-role">研究部副部长</p></div><span class="exp-date">2022.09 - 2024.06</span></div><ul class="exp-list"><li><strong>行业研究培训：</strong>组织并主讲《行业研究方法论与估值实战》系列培训（6 场），覆盖会员 <span class="data-highlight">200+</span> 人，培训后会员行研作业评分平均提升 <span class="data-highlight">20%</span></li><li><strong>研究报告产出：</strong>带队完成《2023 年半导体行业投资策略报告》，覆盖设备/材料/设计三大子领域，研究报告被学院官网转载，阅读量 <span class="data-highlight">3000+</span></li><li><strong>模拟投资大赛：</strong>策划并执行“复旦杯”模拟投资大赛，吸引全校 <span class="data-highlight">500+</span> 学生参与，统筹 10 人工作组完成赛题设计、系统运维与颁奖典礼</li></ul></div><div class="experience-item"><div class="exp-header"><div><h3>复旦大学研究生会</h3><p class="exp-role">学术部部长</p></div><span class="exp-date">2023.06 - 2024.06</span></div><ul class="exp-list"><li><strong>学术讲座组织：</strong>全年组织金融前沿讲座 <span class="data-highlight">12场</span>，邀请业界嘉宾（含 3 位 MD 级别），累计参与人次 <span class="data-highlight">1500+</span>，活动满意度评分 <span class="data-highlight">4.8/5.0</span></li><li><strong>跨校交流：</strong>主导与上海交大、上财的学术联谊活动，完成活动策划、预算管理（总预算 5 万元）及赞助谈判，活动覆盖三校 <span class="data-highlight">800+</span> 研究生</li></ul></div></section><section class="section-block"><div class="section-heading"><span class="section-index">05</span><h2>个人优势</h2></div><div class="skills-grid"><div class="skill-category"><h3>专业技能</h3><p>Python（Pandas/NumPy/Sklearn/Statsmodels）、SQL（数据提取与窗口函数）、Excel（高级函数/透视表/VBA）、MATLAB、Tableau、Wind/Choice 金融终端、Bloomberg、FRM 持证人（通过）</p></div><div class="skill-category"><h3>AI 工具深度应用</h3><p>熟练使用 ChatGPT 辅助行业研究报告撰写、数据清洗代码生成与模型调参，效率提升约 <span class="data-highlight">60%</span>；使用 Copilot 完成策略回测代码框架搭建，迭代速度提升 <span class="data-highlight">50%</span></p></div><div class="skill-category"><h3>语言能力</h3><p>英语（CET-6 <span class="data-highlight">620分</span>，可流畅阅读英文研报与 FASB 准则文件）、普通话（母语）</p></div><div class="skill-category"><h3>核心素质</h3><p>具备扎实的金融建模与数据分析能力，逻辑严谨，擅长从数据中提炼业务洞察；拥有头部券商实习经验，熟悉投行与量化研究业务流程，抗压能力强，适应高强度工作节奏</p></div></div></section>
+      </article>
+    </div>
+    <footer class="doc-footer">HTML 快速生成器 · Word · 森系学术简历 · 2026/8/16</footer>
+  </main>
+  <script>
     (() => {
       const progress = document.querySelector('.reading-progress');
       if (progress) {
@@ -1030,88 +1034,6 @@ function runtimeScript(options: ConversionOptions): string {
         headings.forEach((heading) => observer.observe(heading));
       }
     })();
-  `
-}
-
-export interface BuildDocumentInput {
-  title: string
-  body: string
-  options: ConversionOptions
-  format: string
-  extraBodyClass?: string
-  tokens?: string
-  template?: BeautifulTemplateRecipe
-  analysis?: DocumentAnalysis
-  resolvedTheme?: OutputTheme
-  aiDesign?: {
-    css: string
-    layoutClass: string
-    coverHtml: string
-    themeName: string
-    templateName: string
-    documentType: string
-    audience: string
-    notes: string
-  }
-}
-
-export function buildStandaloneHtml(input: BuildDocumentInput): string {
-  const {
-    title,
-    body,
-    options,
-    format,
-    extraBodyClass = '',
-    tokens: inputTokens,
-    template,
-    analysis,
-    resolvedTheme,
-    aiDesign
-  } = input
-  const activeTheme = resolvedTheme ?? (options.theme === 'auto' ? 'editorial' : options.theme)
-  const tokens = inputTokens ?? themeTokens[activeTheme]
-  const rootTokens = aiDesign ? themeTokens[activeTheme] : tokens
-  const defaultCoverInner = `<p class="eyebrow">${escapeHtml(format)} 文档</p>
-    <h1>${escapeHtml(title)}</h1>
-    <div class="meta">
-      ${analysis ? `<span>${escapeHtml(analysis.documentTypeLabel)}</span><span>${escapeHtml(analysis.audienceLabel)}</span>` : ''}
-      ${template ? `<span>模板参考 · ${escapeHtml(template.name)}</span>` : ''}
-    </div>`
-  const cover = options.includeCover
-    ? `<header class="doc-cover">${aiDesign?.coverHtml || defaultCoverInner}</header>`
-    : ''
-  const toc = options.includeToc ? '<nav class="toc" id="toc"></nav>' : ''
-  const layoutClass = options.includeToc ? 'layout with-toc' : 'layout'
-
-  return `<!doctype html>
-<html lang="zh-CN">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>${escapeHtml(title)}</title>
-  <style>
-    :root { ${rootTokens} }
-    ${options.darkMode && !aiDesign ? darkCss() : ''}
-    ${baseCss()}
-    ${refinedCss()}
-    ${template && analysis ? templateCss(template, analysis) : ''}
-    ${aiDesign ? `body[data-ai-designed="true"] { ${tokens} }` : ''}
-    ${aiDesign?.css || ''}
-  </style>
-</head>
-<body data-theme="${activeTheme}" data-template="${template?.id ?? ''}" data-document-type="${escapeHtml(aiDesign?.documentType || analysis?.documentType || '')}" data-format="${format.toLowerCase()}" data-ai-layout="${escapeHtml(aiDesign?.layoutClass || '')}" data-ai-designed="${aiDesign ? 'true' : 'false'}">
-  <div class="reading-progress"></div>
-  <main class="app-shell">
-    ${cover}
-    <div class="${layoutClass}">
-      ${toc}
-      <article class="content ${extraBodyClass}">
-        ${body}
-      </article>
-    </div>
-    <footer class="doc-footer">HTML 快速生成器 · ${escapeHtml(format)}${aiDesign ? ` · ${escapeHtml(aiDesign.themeName)}` : ''} · ${new Date().toLocaleDateString()}</footer>
-  </main>
-  <script>${runtimeScript(options)}</script>
+  </script>
 </body>
-</html>`
-}
+</html>

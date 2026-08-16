@@ -1,10 +1,28 @@
-import type { ConversionOptions, OutputTheme } from '../shared/types'
-import { themeTokens } from './design/themeRecipes'
-import type { BeautifulTemplateRecipe, DocumentAnalysis } from './design/types'
-import { escapeHtml } from './utils'
-
-function baseCss(): string {
-  return `
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>工作簿2</title>
+  <style>
+    :root { 
+      --bg: #f6f8fa;
+      --surface: #ffffff;
+      --surface-2: #eef2f6;
+      --text: #1e293b;
+      --muted: #64748b;
+      --accent: #0f766e;
+      --accent-soft: #ccfbf1;
+      --border: #dbe3ec;
+      --code-bg: #0f172a;
+      --code-text: #e2e8f0;
+      --radius: 8px;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.07);
+      --font-body: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      --font-heading: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+     }
+    
+    
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body {
@@ -200,25 +218,8 @@ function baseCss(): string {
       .doc-cover { margin-top: 0; padding-top: 36px; }
       .page { padding: 24px 18px; }
     }
-  `
-}
-
-function darkCss(): string {
-  return `
-    :root {
-      --bg: #0f131a;
-      --surface: #171d26;
-      --surface-2: #202936;
-      --text: #e7edf5;
-      --muted: #94a1b2;
-      --border: #2c3644;
-      --shadow: 0 16px 46px rgba(0, 0, 0, 0.28);
-    }
-  `
-}
-
-function refinedCss(): string {
-  return `
+  
+    
     :root {
       --font-ui: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
       --font-serif: "Source Han Serif SC", "Songti SC", "Noto Serif CJK SC", Georgia, serif;
@@ -870,22 +871,12 @@ function refinedCss(): string {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
-  `
-}
-
-function templateCss(template: BeautifulTemplateRecipe, analysis: DocumentAnalysis): string {
-  const contentMaxByLayout: Record<BeautifulTemplateRecipe['layoutClass'], string> = {
-    'layout-editorial': '900px',
-    'layout-report': '1180px',
-    'layout-dashboard': '1240px',
-    'layout-print': '880px'
-  }
-
-  return `
-    body[data-template="${template.id}"] {
-      --content-max: ${contentMaxByLayout[template.layoutClass] ?? '960px'};
-      --font-heading: ${template.typography.headingFont};
-      --font-mono: ${template.typography.monoFont};
+  
+    
+    body[data-template="blue-professional"] {
+      --content-max: 900px;
+      --font-heading: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      --font-mono: "SFMono-Regular", "Cascadia Code", "JetBrains Mono", Consolas, monospace;
     }
 
     body[data-document-type="data-report"] .content,
@@ -961,11 +952,24 @@ function templateCss(template: BeautifulTemplateRecipe, analysis: DocumentAnalys
     body[data-template="capsule"] .kpi-card {
       border-radius: 18px;
     }
-  `
-}
-
-function runtimeScript(options: ConversionOptions): string {
-  return `
+  
+    body[data-ai-designed="true"] { --bg: #faf9f7; --surface: #ffffff; --surface-2: #f4f2ee; --text: #1f1e1d; --muted: #6b6a68; --accent: #8b3a2f; --accent-soft: #f0e6e3; --border: #e3e0da; --code-bg: #f4f2ee; --code-text: #3d3c3a; --radius: 4px; --shadow: 0 2px 8px rgba(31, 30, 29, 0.06); --font-body: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; --font-heading: "Songti SC", "SimSun", "Noto Serif CJK SC", serif; --font-mono: "SF Mono", "Cascadia Code", "Consolas", monospace; --content-max: 980px; }
+    .doc-cover { padding: 48px 0 40px; border-bottom: 1px solid var(--border); margin-bottom: 40px; } .cover-kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; } .cover-title { font-family: var(--font-heading); font-size: 32px; line-height: 1.3; font-weight: 700; color: var(--text); margin: 0 0 16px; max-width: 720px; } .cover-subtitle { font-size: 16px; line-height: 1.7; color: var(--muted); max-width: 640px; margin: 0 0 24px; } .cover-meta { display: flex; flex-wrap: wrap; gap: 8px 24px; font-family: var(--font-mono); font-size: 12px; color: var(--muted); } .doc-section { margin-bottom: 48px; } .section-title { font-family: var(--font-heading); font-size: 22px; font-weight: 700; color: var(--text); display: flex; align-items: baseline; gap: 12px; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); } .section-number { font-family: var(--font-mono); font-size: 14px; color: var(--accent); } .section-lead { font-size: 15px; line-height: 1.8; color: var(--text); margin: 0 0 24px; max-width: 72ch; } .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; } .kpi-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); } .kpi-label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 8px; } .kpi-value { display: block; font-family: var(--font-mono); font-size: 28px; font-weight: 600; color: var(--text); } .table-wrap { overflow-x: auto; margin: 24px 0; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); } .data-table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 640px; } .data-table th { background: var(--surface-2); font-family: var(--font-heading); font-weight: 700; text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--text); } .data-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.6; color: var(--text); } .data-table tr:last-child td { border-bottom: none; } .data-table td[rowspan] { background: var(--accent-soft); font-weight: 600; color: var(--accent); } .category-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 24px 0; } .category-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); } .category-name { font-family: var(--font-heading); font-size: 16px; font-weight: 700; margin: 0 0 8px; color: var(--text); } .category-count { font-family: var(--font-mono); font-size: 14px; color: var(--accent); margin: 0 0 4px; } .category-platform { font-size: 13px; color: var(--muted); margin: 0; } .platform-list { display: flex; flex-direction: column; gap: 16px; margin: 24px 0; } .platform-row { display: flex; align-items: center; gap: 16px; } .platform-name { font-family: var(--font-mono); font-size: 14px; font-weight: 600; width: 48px; color: var(--text); } .platform-bar { flex: 1; height: 12px; background: var(--surface-2); border-radius: 2px; overflow: hidden; } .bar-fill { display: block; height: 100%; background: var(--accent); border-radius: 2px; } .platform-count { font-family: var(--font-mono); font-size: 13px; color: var(--muted); width: 48px; text-align: right; } @media (max-width: 768px) { .cover-title { font-size: 24px; } .kpi-grid { grid-template-columns: repeat(2, 1fr); } .category-grid { grid-template-columns: 1fr; } .doc-cover { padding: 32px 0 24px; } .section-title { font-size: 18px; } } @media (max-width: 375px) { .kpi-grid { grid-template-columns: 1fr; } .cover-meta { flex-direction: column; gap: 4px; } }
+  </style>
+</head>
+<body data-theme="business" data-template="blue-professional" data-document-type="data-report" data-format="excel" data-ai-layout="layout-editorial" data-ai-designed="true">
+  <div class="reading-progress"></div>
+  <main class="app-shell">
+    <header class="doc-cover"><p class="cover-kicker">数据报告 · 工作簿2</p><h1 class="cover-title">学习软件与博主资源数据总览</h1><p class="cover-subtitle">基于 Sheet1 工作表的 20 条记录，整理学习软件、博主名称、主流平台与教学特色的结构化清单。</p><div class="cover-meta"><span>数据来源：工作簿2 / Sheet1</span><span>记录数：20 行</span><span>字段数：4</span></div></header>
+    <div class="layout">
+      
+      <article class="content excel-document">
+        <section class="doc-section" id="overview"><h2 class="section-title"><span class="section-number">一</span>数据概览</h2><p class="section-lead">本工作簿包含 1 个工作表，共 20 行数据记录，涵盖 4 个字段：学习软件、博主名称、主流平台、教学特色。其中“学习软件”字段包含 16 个数值条目，其余字段均为文本描述。</p><div class="kpi-grid"><div class="kpi-item"><span class="kpi-label">工作表数量</span><span class="kpi-value">1</span></div><div class="kpi-item"><span class="kpi-label">数据行数</span><span class="kpi-value">20</span></div><div class="kpi-item"><span class="kpi-label">字段数量</span><span class="kpi-value">4</span></div><div class="kpi-item"><span class="kpi-label">数值字段</span><span class="kpi-value">1</span></div></div></section><section class="doc-section" id="sheet1"><h2 class="section-title"><span class="section-number">二</span>Sheet1 数据明细</h2><p class="section-lead">Sheet1 工作表包含 20 行数据，字段为：学习软件、博主名称、主流平台、教学特色。首行示例：学习软件为“CAD（机械/建筑制图）”，博主名称为“CAD江老师”，主流平台为“抖音”，教学特色为“CAD快键机械土木提效”。</p><div class="table-wrap"><table class="data-table"><thead><tr><th>学习软件</th><th>博主名称</th><th>主流平台</th><th>教学特色</th></tr></thead><tbody><tr><td rowspan="5">CAD（机械/建筑制图）</td><td>CAD江老师</td><td>抖音</td><td>CAD快键机械土木提效</td></tr><tr><td>设计师海龙</td><td>B站</td><td>建筑施工图实战</td></tr><tr><td>机械制图吴老师</td><td>B站</td><td>机械国标三视图教学</td></tr><tr><td>CAD研习社</td><td>B站</td><td>图纸批量标注三维联动</td></tr><tr><td>平哥设计</td><td>抖音</td><td>零基础机械零件绘图</td></tr><tr><td rowspan="5">计算机编程（Python/C/Java全栈）</td><td>鱼C-小甲鱼</td><td>B站</td><td>零基础C/Python入门</td></tr><tr><td>跟李沐学AI</td><td>B站</td><td>深度学习算法教学</td></tr><tr><td>程序员鱼皮</td><td>B站</td><td>全栈项目工科就业实战</td></tr><tr><td>遇见狂神说</td><td>B站</td><td>系统化Java后端课程</td></tr><tr><td>莫烦Python</td><td>B站</td><td>工科数值计算数据分析</td></tr><tr><td rowspan="5">Codex（AI代码生成工具）</td><td>林粒粒呀</td><td>B站</td><td>Codex配置零基础教程</td></tr><tr><td>技术爬爬虾</td><td>B站</td><td>Codex工程代码自动生成实操</td></tr><tr><td>PAPAYA电脑教室</td><td>B站</td><td>Codex处理理工科实验数据</td></tr><tr><td>枫枫知道</td><td>B站</td><td>Codex环境报错排错教学</td></tr><tr><td>Xuan_酱</td><td>B站</td><td>Codex仿真脚本实战项目</td></tr><tr><td rowspan="5">通用理工科仿真工具（Matlab/SolidWorks/Origin）</td><td>工科男孙老师</td><td>B站</td><td>SolidWorks机械运动仿真</td></tr><tr><td>楚安Matlab</td><td>B站</td><td>电气自动化数值仿真</td></tr><tr><td>Origin科研作图君</td><td>抖音</td><td>期刊标准实验绘图</td></tr><tr><td>极客侠工坊</td><td>B站</td><td>Fusion360建模3D打印</td></tr><tr><td>信号老杨</td><td>B站</td><td>Multisim模电电路仿真</td></tr></tbody></table></div></section><section class="doc-section" id="distribution"><h2 class="section-title"><span class="section-number">三</span>软件类别分布</h2><p class="section-lead">20 条记录按学习软件分为 4 大类别，每类各包含 5 位博主，分布均衡。</p><div class="category-grid"><div class="category-card"><h3 class="category-name">CAD（机械/建筑制图）</h3><p class="category-count">5 位博主</p><p class="category-platform">平台：抖音、B站</p></div><div class="category-card"><h3 class="category-name">计算机编程（Python/C/Java全栈）</h3><p class="category-count">5 位博主</p><p class="category-platform">平台：B站</p></div><div class="category-card"><h3 class="category-name">Codex（AI代码生成工具）</h3><p class="category-count">5 位博主</p><p class="category-platform">平台：B站</p></div><div class="category-card"><h3 class="category-name">通用理工科仿真工具（Matlab/SolidWorks/Origin）</h3><p class="category-count">5 位博主</p><p class="category-platform">平台：B站、抖音</p></div></div></section><section class="doc-section" id="platform"><h2 class="section-title"><span class="section-number">四</span>平台分布观察</h2><p class="section-lead">在全部 20 条记录中，B站为主要承载平台，共出现 16 次；抖音出现 4 次。具体分布如下：</p><div class="platform-list"><div class="platform-row"><span class="platform-name">B站</span><span class="platform-bar"><span class="bar-fill" style="width: 80%;"></span></span><span class="platform-count">16 条</span></div><div class="platform-row"><span class="platform-name">抖音</span><span class="platform-bar"><span class="bar-fill" style="width: 20%;"></span></span><span class="platform-count">4 条</span></div></div></section>
+      </article>
+    </div>
+    <footer class="doc-footer">HTML 快速生成器 · Excel · 学术白皮书 · 2026/8/16</footer>
+  </main>
+  <script>
     (() => {
       const progress = document.querySelector('.reading-progress');
       if (progress) {
@@ -1030,88 +1034,6 @@ function runtimeScript(options: ConversionOptions): string {
         headings.forEach((heading) => observer.observe(heading));
       }
     })();
-  `
-}
-
-export interface BuildDocumentInput {
-  title: string
-  body: string
-  options: ConversionOptions
-  format: string
-  extraBodyClass?: string
-  tokens?: string
-  template?: BeautifulTemplateRecipe
-  analysis?: DocumentAnalysis
-  resolvedTheme?: OutputTheme
-  aiDesign?: {
-    css: string
-    layoutClass: string
-    coverHtml: string
-    themeName: string
-    templateName: string
-    documentType: string
-    audience: string
-    notes: string
-  }
-}
-
-export function buildStandaloneHtml(input: BuildDocumentInput): string {
-  const {
-    title,
-    body,
-    options,
-    format,
-    extraBodyClass = '',
-    tokens: inputTokens,
-    template,
-    analysis,
-    resolvedTheme,
-    aiDesign
-  } = input
-  const activeTheme = resolvedTheme ?? (options.theme === 'auto' ? 'editorial' : options.theme)
-  const tokens = inputTokens ?? themeTokens[activeTheme]
-  const rootTokens = aiDesign ? themeTokens[activeTheme] : tokens
-  const defaultCoverInner = `<p class="eyebrow">${escapeHtml(format)} 文档</p>
-    <h1>${escapeHtml(title)}</h1>
-    <div class="meta">
-      ${analysis ? `<span>${escapeHtml(analysis.documentTypeLabel)}</span><span>${escapeHtml(analysis.audienceLabel)}</span>` : ''}
-      ${template ? `<span>模板参考 · ${escapeHtml(template.name)}</span>` : ''}
-    </div>`
-  const cover = options.includeCover
-    ? `<header class="doc-cover">${aiDesign?.coverHtml || defaultCoverInner}</header>`
-    : ''
-  const toc = options.includeToc ? '<nav class="toc" id="toc"></nav>' : ''
-  const layoutClass = options.includeToc ? 'layout with-toc' : 'layout'
-
-  return `<!doctype html>
-<html lang="zh-CN">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>${escapeHtml(title)}</title>
-  <style>
-    :root { ${rootTokens} }
-    ${options.darkMode && !aiDesign ? darkCss() : ''}
-    ${baseCss()}
-    ${refinedCss()}
-    ${template && analysis ? templateCss(template, analysis) : ''}
-    ${aiDesign ? `body[data-ai-designed="true"] { ${tokens} }` : ''}
-    ${aiDesign?.css || ''}
-  </style>
-</head>
-<body data-theme="${activeTheme}" data-template="${template?.id ?? ''}" data-document-type="${escapeHtml(aiDesign?.documentType || analysis?.documentType || '')}" data-format="${format.toLowerCase()}" data-ai-layout="${escapeHtml(aiDesign?.layoutClass || '')}" data-ai-designed="${aiDesign ? 'true' : 'false'}">
-  <div class="reading-progress"></div>
-  <main class="app-shell">
-    ${cover}
-    <div class="${layoutClass}">
-      ${toc}
-      <article class="content ${extraBodyClass}">
-        ${body}
-      </article>
-    </div>
-    <footer class="doc-footer">HTML 快速生成器 · ${escapeHtml(format)}${aiDesign ? ` · ${escapeHtml(aiDesign.themeName)}` : ''} · ${new Date().toLocaleDateString()}</footer>
-  </main>
-  <script>${runtimeScript(options)}</script>
+  </script>
 </body>
-</html>`
-}
+</html>

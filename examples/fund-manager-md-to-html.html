@@ -3,23 +3,23 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>sample-data</title>
+  <title>README</title>
   <style>
     :root { 
-      --bg: #f7f5f0;
-      --surface: #fffdf9;
-      --surface-2: #efebe3;
-      --text: #242a2f;
-      --muted: #6f767d;
-      --accent: #a8492d;
-      --accent-soft: #f1ded5;
-      --border: #ded8cf;
-      --code-bg: #22282d;
-      --code-text: #f4f1ea;
-      --radius: 12px;
-      --shadow: 0 18px 45px rgba(45, 39, 31, 0.08);
+      --bg: #f6f8fa;
+      --surface: #ffffff;
+      --surface-2: #eef2f6;
+      --text: #1e293b;
+      --muted: #64748b;
+      --accent: #0f766e;
+      --accent-soft: #ccfbf1;
+      --border: #dbe3ec;
+      --code-bg: #0f172a;
+      --code-text: #e2e8f0;
+      --radius: 8px;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.07);
       --font-body: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
-      --font-heading: "Source Han Serif SC", "Songti SC", "Noto Serif CJK SC", Georgia, serif;
+      --font-heading: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
      }
     
     
@@ -249,34 +249,14 @@
       --content-max: 820px;
     }
 
-    body[data-theme="soft-editorial"] {
-      --font-heading: var(--font-serif);
-      --content-max: 900px;
-    }
-
-    body[data-theme="blue-professional"] {
-      --font-heading: var(--font-ui);
-      --content-max: 1040px;
-    }
-
     body[data-theme="editorial-forest"] {
       --font-heading: var(--font-serif);
       --content-max: 880px;
     }
 
-    body[data-theme="monochrome"] {
-      --font-heading: var(--font-ui);
-      --content-max: 860px;
-    }
-
     body[data-theme="moyu-green"] {
       --font-heading: var(--font-ui);
       --content-max: 1060px;
-    }
-
-    body[data-theme="graphite-minimal"] {
-      --font-heading: var(--font-ui);
-      --content-max: 900px;
     }
 
     body[data-theme="zen-whitespace"] {
@@ -287,6 +267,21 @@
     body[data-theme="red-white"] {
       --font-heading: var(--font-serif);
       --content-max: 860px;
+    }
+
+    body[data-theme="neo-brutal"] {
+      --font-heading: var(--font-ui);
+      --content-max: 1080px;
+    }
+
+    body[data-theme="terminal"] {
+      --font-heading: var(--font-mono);
+      --content-max: 1040px;
+    }
+
+    body[data-theme="bento"] {
+      --font-heading: var(--font-ui);
+      --content-max: 1200px;
     }
 
     body {
@@ -697,7 +692,7 @@
       gap: 10px;
     }
 
-    .timeline-item {
+    .timeline-list .timeline-item {
       display: grid;
       grid-template-columns: 34px minmax(0, 1fr) auto;
       gap: 10px;
@@ -877,81 +872,145 @@
       }
     }
   
+    
+    body[data-template="blue-professional"] {
+      --content-max: 1180px;
+      --font-heading: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      --font-mono: "SFMono-Regular", "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+    }
+
+    body[data-document-type="data-report"] .content,
+    body[data-document-type="report"] .content {
+      max-width: 1240px;
+    }
+
+    .intel-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .intel-strip span {
+      padding: 5px 9px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+    }
+
+    .intel-strip .intel-badge {
+      color: var(--accent);
+      border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+      background: var(--accent-soft);
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+
+    .core-summary {
+      background: color-mix(in srgb, var(--surface) 92%, var(--accent));
+      border-color: color-mix(in srgb, var(--accent) 32%, var(--border));
+    }
+
+    .core-summary p {
+      font-family: var(--font-heading);
+      font-size: clamp(21px, 3vw, 28px);
+      font-weight: 650;
+      letter-spacing: -0.025em;
+      line-height: 1.38;
+    }
+
+    .summary-detail {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--hairline);
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.75;
+    }
+
+    .template-note {
+      margin-top: 14px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .template-note a {
+      color: inherit;
+    }
+
+    body[data-template="long-table"] .summary-card,
+    body[data-template="long-table"] .kpi-card,
+    body[data-template="long-table"] .chart-card {
+      border-radius: 999px;
+    }
+
+    body[data-template="capsule"] .kpi-card {
+      border-radius: 18px;
+    }
+  
+    body[data-ai-designed="true"] { --bg: #0d1117; --surface: #161b22; --surface-2: #1f2630; --text: #e6edf3; --muted: #8b949e; --accent: #07c160; --accent-soft: rgba(7, 193, 96, 0.15); --border: #30363d; --code-bg: #161b22; --code-text: #a5d6ff; --radius: 10px; --shadow: 0 8px 24px rgba(0, 0, 0, 0.4); --font-body: 'SF Mono', 'JetBrains Mono', Consolas, 'PingFang SC', 'Microsoft YaHei', monospace; --font-heading: 'SF Mono', 'JetBrains Mono', Consolas, 'Courier New', monospace; --font-mono: 'SF Mono', 'JetBrains Mono', Consolas, 'Courier New', monospace; --content-max: 1080px; }
+    .doc-section { margin-bottom: 48px; }
+.section-label { font-family: var(--font-mono); color: var(--accent); font-size: 13px; letter-spacing: 0.05em; margin-bottom: 12px; }
+.lead-text { font-size: 18px; line-height: 1.7; color: var(--text); max-width: 720px; border-left: 3px solid var(--accent); padding-left: 16px; }
+.section-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+.section-marker { font-family: var(--font-mono); color: var(--accent); font-size: 14px; font-weight: 700; }
+.section-title { font-family: var(--font-heading); font-size: 22px; color: var(--text); margin: 0; }
+.feature-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.feature-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; transition: border-color 0.2s; }
+.feature-card:hover { border-color: var(--accent); }
+.feature-icon { font-size: 24px; margin-bottom: 8px; }
+.feature-card h3 { font-family: var(--font-heading); font-size: 15px; color: var(--accent); margin: 0 0 8px 0; }
+.feature-card p { font-size: 13px; line-height: 1.6; color: var(--muted); margin: 0; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); }
+.tech-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tech-table th { background: var(--surface-2); color: var(--accent); text-align: left; padding: 12px 16px; font-family: var(--font-heading); font-size: 13px; border-bottom: 1px solid var(--border); }
+.tech-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--text); }
+.tech-table tr:last-child td { border-bottom: none; }
+.tech-layer { font-family: var(--font-mono); color: var(--accent); white-space: nowrap; font-weight: 600; }
+.tech-table code { background: var(--code-bg); color: var(--code-text); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+.code-block { background: var(--code-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; overflow-x: auto; }
+.code-block pre { margin: 0; font-family: var(--font-mono); font-size: 13px; line-height: 1.7; color: var(--code-text); }
+.setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.setup-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+.setup-card h3 { font-family: var(--font-heading); font-size: 15px; color: var(--accent); margin: 0 0 12px 0; }
+.setup-card ul, .setup-card ol { margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.8; color: var(--text); }
+.setup-card code { background: var(--code-bg); color: var(--code-text); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+.config-block { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: var(--radius); padding: 20px; font-size: 14px; line-height: 1.8; color: var(--text); }
+.config-block code { background: var(--code-bg); color: var(--code-text); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+.storage-block { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; font-size: 14px; line-height: 1.8; color: var(--text); }
+.storage-block code { background: var(--code-bg); color: var(--code-text); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+.license-block { margin-bottom: 0; }
+.license-box { display: flex; align-items: center; gap: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+.license-badge { font-family: var(--font-heading); font-size: 18px; font-weight: 700; color: var(--accent); border: 2px solid var(--accent); border-radius: 6px; padding: 4px 12px; }
+.license-box p { margin: 0; font-size: 14px; color: var(--muted); }
+.cover-terminal { padding: 40px 0 24px 0; border-bottom: 1px solid var(--border); margin-bottom: 40px; }
+.cover-line { font-family: var(--font-mono); font-size: 14px; color: var(--muted); margin-bottom: 16px; }
+.cover-prompt { color: var(--accent); }
+.cover-title { font-family: var(--font-heading); font-size: 36px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.cover-accent { color: var(--accent); }
+.cover-subtitle { font-size: 16px; color: var(--muted); margin-bottom: 20px; }
+.cover-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.badge { font-family: var(--font-mono); font-size: 12px; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 4px 10px; }
+.cover-meta { display: flex; gap: 24px; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+@media (max-width: 768px) { .setup-grid { grid-template-columns: 1fr; } .feature-grid { grid-template-columns: 1fr; } .cover-title { font-size: 28px; } }
   </style>
 </head>
-<body data-theme="editorial" data-format="excel">
+<body data-theme="business" data-template="blue-professional" data-document-type="technical" data-format="markdown" data-ai-layout="layout-report" data-ai-designed="true">
   <div class="reading-progress"></div>
   <main class="app-shell">
-    <header class="doc-cover">
-        <p class="eyebrow">Excel 文档</p>
-        <h1>sample-data</h1>
-        <div class="meta">由 HTML 快速生成器生成</div>
-      </header>
-    <div class="layout with-toc">
-      <nav class="toc" id="toc"></nav>
-      <article class="content excel-document">
-        <section class="insight-layer density-compact">
-    <div class="summary-card">
-      <div class="block-kicker">文档摘要</div>
-      <p>工作表 销售数据</p>
-    </div>
-    <div class="kpi-grid"><div class="kpi-card">
-    <div class="kpi-label">收入</div>
-    <div class="kpi-value">930000</div>
-    <div class="kpi-trend is-up">上升</div>
-  </div><div class="kpi-card">
-    <div class="kpi-label">收入 均值</div>
-    <div class="kpi-value">155000</div>
-    <div class="kpi-trend is-flat">平稳</div>
-  </div><div class="kpi-card">
-    <div class="kpi-label">完成度</div>
-    <div class="kpi-value">350</div>
-    <div class="kpi-trend is-down">下降</div>
-  </div><div class="kpi-card">
-    <div class="kpi-label">完成度 均值</div>
-    <div class="kpi-value">70</div>
-    <div class="kpi-trend is-flat">平稳</div>
-  </div><div class="kpi-card">
-    <div class="kpi-label">成交额</div>
-    <div class="kpi-value">480000</div>
-    <div class="kpi-trend is-down">下降</div>
-  </div><div class="kpi-card">
-    <div class="kpi-label">成交额 均值</div>
-    <div class="kpi-value">120000</div>
-    <div class="kpi-trend is-flat">平稳</div>
-  </div></div>
-    <div class="chart-grid"><div class="chart-card">
-    <div class="chart-title">销售数据</div>
-    <div class="chart-source">来源：销售数据</div>
-    <svg class="chart-svg" viewBox="0 0 640 260" role="img" aria-label="销售数据">
-    <line x1="42" y1="218" x2="598" y2="218" class="chart-axis"></line>
-    <polyline points="42,106.8421052631579 153.2,92.94736842105263 264.4,80.90526315789475 375.6,67.93684210526317 486.8,55.89473684210526 598,42" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
-    <circle cx="42" cy="106.8421052631579" r="4" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"></circle><circle cx="153.2" cy="92.94736842105263" r="4" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"></circle><circle cx="264.4" cy="80.90526315789475" r="4" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"></circle><circle cx="375.6" cy="67.93684210526317" r="4" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"></circle><circle cx="486.8" cy="55.89473684210526" r="4" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"></circle><circle cx="598" cy="42" r="4" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"></circle>
-    <text x="42" y="248" text-anchor="middle" class="chart-label">1月</text><text x="153.2" y="248" text-anchor="middle" class="chart-label">2月</text><text x="264.4" y="248" text-anchor="middle" class="chart-label">3月</text><text x="375.6" y="248" text-anchor="middle" class="chart-label">4月</text><text x="486.8" y="248" text-anchor="middle" class="chart-label">5月</text><text x="598" y="248" text-anchor="middle" class="chart-label">6月</text>
-  </svg>
-  </div></div>
-    <section class="finding-section"><div class="block-kicker">关键发现</div><div class="finding-list"><div class="finding-item">
-        <span class="finding-index">01</span>
-        <div><strong>收入</strong><p>当前值为 930000</p></div>
-      </div><div class="finding-item">
-        <span class="finding-index">02</span>
-        <div><strong>收入 均值</strong><p>当前值为 155000</p></div>
-      </div><div class="finding-item">
-        <span class="finding-index">03</span>
-        <div><strong>完成度</strong><p>当前值为 350</p></div>
-      </div></div></section>
-    <section class="highlight-section"><div class="block-kicker">内容重点</div><div class="highlight-list"><span class="highlight-chip">销售数据</span><span class="highlight-chip">项目进度</span><span class="highlight-chip">渠道占比</span></div></section>
-    
-  </section><div class="sheet-tabs"><button class="sheet-tab is-active" data-target="sheet-0">销售数据</button><button class="sheet-tab " data-target="sheet-1">项目进度</button><button class="sheet-tab " data-target="sheet-2">渠道占比</button></div><section class="sheet-panel is-active" id="sheet-0">
-        <div class="table-wrap"><html><head><meta charset="utf-8"/><title>SheetJS Table Export</title></head><body><table id="sheet-table-0"><tr><td data-t="s" data-v="月份" data-z="General" id="sheet-table-0-A1">月份</td><td data-t="s" data-v="收入" data-z="General" id="sheet-table-0-B1">收入</td><td data-t="s" data-v="成本" data-z="General" id="sheet-table-0-C1">成本</td><td data-t="s" data-v="利润" data-z="General" id="sheet-table-0-D1">利润</td></tr><tr><td data-t="s" data-v="1月" data-z="General" id="sheet-table-0-A2">1月</td><td data-t="n" data-v="120000" data-z="General" id="sheet-table-0-B2">120000</td><td data-t="n" data-v="78000" data-z="General" id="sheet-table-0-C2">78000</td><td data-t="n" data-v="42000" data-z="General" id="sheet-table-0-D2">42000</td></tr><tr><td data-t="s" data-v="2月" data-z="General" id="sheet-table-0-A3">2月</td><td data-t="n" data-v="135000" data-z="General" id="sheet-table-0-B3">135000</td><td data-t="n" data-v="81000" data-z="General" id="sheet-table-0-C3">81000</td><td data-t="n" data-v="54000" data-z="General" id="sheet-table-0-D3">54000</td></tr><tr><td data-t="s" data-v="3月" data-z="General" id="sheet-table-0-A4">3月</td><td data-t="n" data-v="148000" data-z="General" id="sheet-table-0-B4">148000</td><td data-t="n" data-v="86000" data-z="General" id="sheet-table-0-C4">86000</td><td data-t="n" data-v="62000" data-z="General" id="sheet-table-0-D4">62000</td></tr><tr><td data-t="s" data-v="4月" data-z="General" id="sheet-table-0-A5">4月</td><td data-t="n" data-v="162000" data-z="General" id="sheet-table-0-B5">162000</td><td data-t="n" data-v="90000" data-z="General" id="sheet-table-0-C5">90000</td><td data-t="n" data-v="72000" data-z="General" id="sheet-table-0-D5">72000</td></tr><tr><td data-t="s" data-v="5月" data-z="General" id="sheet-table-0-A6">5月</td><td data-t="n" data-v="175000" data-z="General" id="sheet-table-0-B6">175000</td><td data-t="n" data-v="93000" data-z="General" id="sheet-table-0-C6">93000</td><td data-t="n" data-v="82000" data-z="General" id="sheet-table-0-D6">82000</td></tr><tr><td data-t="s" data-v="6月" data-z="General" id="sheet-table-0-A7">6月</td><td data-t="n" data-v="190000" data-z="General" id="sheet-table-0-B7">190000</td><td data-t="n" data-v="98000" data-z="General" id="sheet-table-0-C7">98000</td><td data-t="n" data-v="92000" data-z="General" id="sheet-table-0-D7">92000</td></tr></table></body></html></div>
-      </section><section class="sheet-panel " id="sheet-1">
-        <div class="table-wrap"><html><head><meta charset="utf-8"/><title>SheetJS Table Export</title></head><body><table id="sheet-table-1"><tr><td data-t="s" data-v="项目" data-z="General" id="sheet-table-1-A1">项目</td><td data-t="s" data-v="状态" data-z="General" id="sheet-table-1-B1">状态</td><td data-t="s" data-v="完成度" data-z="General" id="sheet-table-1-C1">完成度</td><td data-t="s" data-v="负责人" data-z="General" id="sheet-table-1-D1">负责人</td></tr><tr><td data-t="s" data-v="首页改版" data-z="General" id="sheet-table-1-A2">首页改版</td><td data-t="s" data-v="已完成" data-z="General" id="sheet-table-1-B2">已完成</td><td data-t="n" data-v="100" data-z="General" id="sheet-table-1-C2">100</td><td data-t="s" data-v="A" data-z="General" id="sheet-table-1-D2">A</td></tr><tr><td data-t="s" data-v="转换器优化" data-z="General" id="sheet-table-1-A3">转换器优化</td><td data-t="s" data-v="进行中" data-z="General" id="sheet-table-1-B3">进行中</td><td data-t="n" data-v="72" data-z="General" id="sheet-table-1-C3">72</td><td data-t="s" data-v="B" data-z="General" id="sheet-table-1-D3">B</td></tr><tr><td data-t="s" data-v="图表引擎" data-z="General" id="sheet-table-1-A4">图表引擎</td><td data-t="s" data-v="进行中" data-z="General" id="sheet-table-1-B4">进行中</td><td data-t="n" data-v="58" data-z="General" id="sheet-table-1-C4">58</td><td data-t="s" data-v="C" data-z="General" id="sheet-table-1-D4">C</td></tr><tr><td data-t="s" data-v="导出功能" data-z="General" id="sheet-table-1-A5">导出功能</td><td data-t="s" data-v="已完成" data-z="General" id="sheet-table-1-B5">已完成</td><td data-t="n" data-v="100" data-z="General" id="sheet-table-1-C5">100</td><td data-t="s" data-v="A" data-z="General" id="sheet-table-1-D5">A</td></tr><tr><td data-t="s" data-v="AI 分析" data-z="General" id="sheet-table-1-A6">AI 分析</td><td data-t="s" data-v="规划中" data-z="General" id="sheet-table-1-B6">规划中</td><td data-t="n" data-v="20" data-z="General" id="sheet-table-1-C6">20</td><td data-t="s" data-v="D" data-z="General" id="sheet-table-1-D6">D</td></tr></table></body></html></div>
-      </section><section class="sheet-panel " id="sheet-2">
-        <div class="table-wrap"><html><head><meta charset="utf-8"/><title>SheetJS Table Export</title></head><body><table id="sheet-table-2"><tr><td data-t="s" data-v="渠道" data-z="General" id="sheet-table-2-A1">渠道</td><td data-t="s" data-v="成交额" data-z="General" id="sheet-table-2-B1">成交额</td></tr><tr><td data-t="s" data-v="自然搜索" data-z="General" id="sheet-table-2-A2">自然搜索</td><td data-t="n" data-v="180000" data-z="General" id="sheet-table-2-B2">180000</td></tr><tr><td data-t="s" data-v="社交媒体" data-z="General" id="sheet-table-2-A3">社交媒体</td><td data-t="n" data-v="96000" data-z="General" id="sheet-table-2-B3">96000</td></tr><tr><td data-t="s" data-v="广告投放" data-z="General" id="sheet-table-2-A4">广告投放</td><td data-t="n" data-v="132000" data-z="General" id="sheet-table-2-B4">132000</td></tr><tr><td data-t="s" data-v="老客推荐" data-z="General" id="sheet-table-2-A5">老客推荐</td><td data-t="n" data-v="72000" data-z="General" id="sheet-table-2-B5">72000</td></tr></table></body></html></div>
-      </section>
+    <header class="doc-cover"><div class="cover-terminal"><div class="cover-line"><span class="cover-prompt">$</span> fund-manager --init</div><div class="cover-title">基金管理 <span class="cover-accent">Fund Manager</span></div><div class="cover-subtitle">个人基金持仓跟踪 · AI 智能分析 · 行情发现</div><div class="cover-badges"><span class="badge">WeChat Mini Program v3.0+</span><span class="badge">Renderer: Skyline</span><span class="badge">Cloud Functions</span></div><div class="cover-meta"><span>// 技术文档</span><span>// MIT License</span></div></div></header>
+    <div class="layout">
+      
+      <article class="content ">
+        <section class="doc-section intro-block"><div class="section-label">// 项目简介</div><p class="lead-text">一个微信小程序，用于个人基金持仓跟踪、AI 智能分析与行情发现。</p></section><section class="doc-section"><div class="section-header"><span class="section-marker">01</span><h2 class="section-title">功能概览</h2></div><div class="feature-grid"><div class="feature-card"><div class="feature-icon">📊</div><h3>基金管理</h3><p>按基金代码添加基金，支持持仓 / 自选双列表，自定义分组归类</p></div><div class="feature-card"><div class="feature-icon">🤖</div><h3>AI 新闻分析</h3><p>拉取持仓重仓股及关联板块的实时新闻，通过 DeepSeek 大模型或本地关键词引擎自动标注利好 / 利空，生成加仓 / 减仓 / 观望建议</p></div><div class="feature-card"><div class="feature-icon">📈</div><h3>基金详情</h3><p>重仓股仓位、净值走势图（支持 1/3/6/12 月并与沪深 300 基准对比）、板块新闻情绪面板</p></div><div class="feature-card"><div class="feature-icon">💰</div><h3>交易记录</h3><p>录入买入/卖出，自动计算持仓成本、浮动盈亏和持有天数；支持持仓金额/收益手动覆写</p></div><div class="feature-card"><div class="feature-icon">⏰</div><h3>定投计划</h3><p>每日/每周/每双周/每月自动执行定投，按当前净值生成交易记录</p></div><div class="feature-card"><div class="feature-icon">🌐</div><h3>行情总览</h3><p>上证、深证、创业板、科创 50 等指数实时行情，行业板块涨跌排行</p></div><div class="feature-card"><div class="feature-icon">🔍</div><h3>基金发现</h3><p>按类型（股票/混合/债券/指数/货币）和业绩指标排名浏览全市场基金，快速加入自选</p></div><div class="feature-card"><div class="feature-icon">☁️</div><h3>云端同步</h3><p>基于微信云开发实现多设备数据合并同步</p></div></div></section><section class="doc-section"><div class="section-header"><span class="section-marker">02</span><h2 class="section-title">技术栈</h2></div><div class="table-wrap"><table class="tech-table"><thead><tr><th>层</th><th>方案</th></tr></thead><tbody><tr><td class="tech-layer">前端框架</td><td>微信小程序原生 + Skyline 渲染引擎 + glass-easel 组件框架</td></tr><tr><td class="tech-layer">样式</td><td>自定义 CSS 变量，深色金融科技风</td></tr><tr><td class="tech-layer">后端</td><td>微信云函数（<code>fundApi</code> / <code>analyze</code> / <code>sync</code>）</td></tr><tr><td class="tech-layer">数据源</td><td>东方财富基金 API、新浪行情 API、华尔街见闻快讯</td></tr><tr><td class="tech-layer">AI 引擎</td><td>DeepSeek API（可选），自动降级为本地关键词规则引擎</td></tr><tr><td class="tech-layer">存储</td><td>微信 Storage 本地存储 + 云开发数据库云端同步</td></tr></tbody></table></div></section><section class="doc-section"><div class="section-header"><span class="section-marker">03</span><h2 class="section-title">项目结构</h2></div><div class="code-block"><pre><code>fund-manager/<br>├── app.js                    # 应用入口，全局数据、API 封装、云同步、定投引擎<br>├── app.json                  # 应用配置（Skyline、glass-easel）<br>├── app.wxss                  # 全局样式（深色金融风 CSS 变量）<br>├── pages/<br>│   ├── index/                # 首页 — 持仓/自选列表、分组过滤、添加基金<br>│   ├── detail/               # 详情 — 净值走势图、重仓股、新闻分析、交易记录<br>│   ├── market/               # 行情 — 大盘指数、行业板块涨跌<br>│   └── discover/             # 发现 — 按类型/业绩排名浏览基金<br>├── components/<br>│   └── navigation-bar/       # 自定义导航栏<br>├── cloudfunctions/<br>│   ├── fundApi/              # 基金数据 API 代理（搜索、净值、历史、持仓、排名、行情）<br>│   ├── analyze/              # AI 分析引擎（DeepSeek + 关键词规则降级）<br>│   └── sync/                 # 多设备数据合并同步<br>├── project.config.json<br>└── sitemap.json</code></pre></div></section><section class="doc-section"><div class="section-header"><span class="section-marker">04</span><h2 class="section-title">快速开始</h2></div><div class="setup-grid"><div class="setup-card"><h3>前置条件</h3><ul><li><a href="https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html">微信开发者工具</a> 最新版</li><li>已注册微信小程序 AppID，并开通<strong>云开发</strong>能力</li></ul></div><div class="setup-card"><h3>本地运行</h3><ol><li>克隆仓库后在微信开发者工具中导入项目目录</li><li>在 <code>project.config.json</code> 中替换为自己的 <code>appid</code></li><li>在云开发控制台创建环境，将 <code>app.js</code> 中的 <code>env</code> 替换为你的云环境 ID</li><li>上传并部署 <code>cloudfunctions/</code> 下的三个云函数</li><li>编译运行即可</li></ol></div></div></section><section class="doc-section"><div class="section-header"><span class="section-marker">05</span><h2 class="section-title">配置 AI 分析（可选）</h2></div><div class="config-block"><p><code>analyze</code> 云函数支持 DeepSeek 大模型分析，未配置时自动降级为本地关键词规则引擎：</p><ol><li>在 <a href="https://platform.deepseek.com">DeepSeek 开放平台</a> 获取 API Key</li><li>微信云开发控制台 → 云函数 → <code>analyze</code> → 环境变量，添加：<br><code>DEEPSEEK_API_KEY</code> = <code>sk-xxxxxxxxxxxxxxxx</code></li><li>重新部署 <code>analyze</code> 云函数</li></ol></div></section><section class="doc-section"><div class="section-header"><span class="section-marker">06</span><h2 class="section-title">数据存储</h2></div><div class="storage-block"><p>本地数据全部通过 <code>wx.setStorageSync</code> 存储在小程序端，涵盖基金代码、分组、类型、交易记录和定投计划。<code>sync</code> 云函数负责在多个微信端之间合并同步这些数据到云数据库。每次数据变更后自动静默推送。</p></div></section><section class="doc-section license-block"><div class="section-header"><span class="section-marker">07</span><h2 class="section-title">License</h2></div><div class="license-box"><span class="license-badge">MIT</span><p>本项目基于 MIT 许可证开源。</p></div></section>
       </article>
     </div>
-    <footer class="doc-footer">HTML 快速生成器 · Excel · 8/16/2026</footer>
+    <footer class="doc-footer">HTML 快速生成器 · Markdown · 终端金融风 · 2026/8/16</footer>
   </main>
   <script>
     (() => {

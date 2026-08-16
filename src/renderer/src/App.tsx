@@ -1,8 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { DragEvent, JSX } from 'react'
 import {
   AlertTriangle,
+  Bot,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
   Code2,
   Download,
   Eye,
@@ -13,17 +16,16 @@ import {
   Info,
   Loader2,
   Monitor,
-  Moon,
-  Palette,
+  RefreshCw,
+  Search,
   Smartphone,
   Sparkles,
-  Sun,
   Tablet,
   Upload,
   X
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import type { ConversionOptions, ConversionResult, DocFormat, OutputTheme } from '../../shared/types'
+import type { AiDesignConfig, ConversionOptions, ConversionResult, DocFormat } from '../../shared/types'
 
 interface SelectedFile {
   path: string
@@ -39,18 +41,21 @@ const formatMeta: Record<DocFormat, { label: string; icon: LucideIcon }> = {
   pdf: { label: 'PDF', icon: File }
 }
 
-const themeMeta: Array<{ id: OutputTheme; label: string }> = [
-  { id: 'editorial', label: '编辑风格' },
-  { id: 'technical', label: '技术风格' },
-  { id: 'business', label: '商务风格' },
-  { id: 'print', label: '打印风格' },
-  { id: 'editorial-forest', label: '森林编辑风' },
-  { id: 'moyu-green', label: '摸鱼绿' },
-  { id: 'zen-whitespace', label: '留白禅意风' },
-  { id: 'red-white', label: '红白编辑风' },
-  { id: 'neo-brutal', label: '新粗野风' },
-  { id: 'terminal', label: '终端极客风' },
-  { id: 'bento', label: 'Bento 卡片风' }
+const initialAiDesign: AiDesignConfig = {
+  enabled: true,
+  baseUrl: 'https://api.deepseek.com',
+  model: 'deepseek-chat',
+  apiKey: '',
+  styleHint: ''
+}
+
+const stylePresets: Array<{ label: string; prompt: string }> = [
+  { label: '程序员代码风格', prompt: '程序员代码风格：深色终端配色、等宽字体、清晰代码块和简洁技术排版。' },
+  { label: '森系少女风格', prompt: '森系少女风格：奶油白底色、鼠尾草绿和柔粉点缀，圆角自然感排版。' },
+  { label: '极简杂志风', prompt: '极简杂志风：大量留白、衬线标题、克制的黑白灰配色。' },
+  { label: '商务咨询报告', prompt: '商务咨询报告：权威克制、数据图表清晰、强调结论和行动建议。' },
+  { label: '深色科技大屏', prompt: '深色科技大屏：深蓝黑底、霓虹点缀、高信息密度仪表盘布局。' },
+  { label: '学术论文白皮书', prompt: '学术论文白皮书：纸面质感、严谨排版、脚注和引用清晰。' }
 ]
 
 function detectFormat(name: string): DocFormat | null {
@@ -86,21 +91,45 @@ function App(): JSX.Element {
   const [dragActive, setDragActive] = useState(false)
   const [view, setView] = useState<'preview' | 'source'>('preview')
   const [device, setDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop')
+  const [sourceQuery, setSourceQuery] = useState('')
+  const [sourceActiveIndex, setSourceActiveIndex] = useState(0)
+  const [aiDraft, setAiDraft] = useState<AiDesignConfig>(initialAiDesign)
+  const sourceEditorRef = useRef<HTMLTextAreaElement | null>(null)
+  const sourceSearchRef = useRef<HTMLInputElement | null>(null)
   const [options, setOptions] = useState<ConversionOptions>({
-    theme: 'editorial',
-    mode: 'clean',
+    theme: 'auto',
     includeCover: true,
-    includeToc: true,
-    darkMode: false
+    includeToc: false,
+    darkMode: false,
+    aiDesign: initialAiDesign
   })
 
-  const convert = useCallback(async () => {
+  useEffect(() => {
+    let active = true
+
+    window.api
+      .getAiSettings()
+      .then((saved) => {
+        if (!active || !saved) return
+        setAiDraft(saved)
+        setOptions((current) => ({ ...current, aiDesign: saved }))
+      })
+      .catch(() => {
+        if (active) setNotice('读取 AI 本地配置失败。')
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  const convert = useCallback(async (override?: ConversionOptions) => {
     if (!selectedFile) return
     setLoading(true)
     setError(null)
     setResult(null)
     try {
-      const next = await window.api.convertFile(selectedFile.path, options)
+      const next = await window.api.convertFile(selectedFile.path, override ?? options)
       setResult(next)
     } catch (conversionError) {
       setError(conversionError instanceof Error ? conversionError.message : '转换失败。')
@@ -108,10 +137,6 @@ function App(): JSX.Element {
       setLoading(false)
     }
   }, [options, selectedFile])
-
-  useEffect(() => {
-    if (selectedFile) void convert()
-  }, [convert, selectedFile])
 
   useEffect(() => {
     if (!notice) return
@@ -128,6 +153,7 @@ function App(): JSX.Element {
       return
     }
     setError(null)
+    setResult(null)
     setSelectedFile({ path, name, size, format })
   }, [])
 
@@ -153,11 +179,109 @@ function App(): JSX.Element {
     }
   }
 
+  const savePdf = async (): Promise<void> => {
+    if (!result || !selectedFile) return
+    const suggestedName = selectedFile.name.replace(/\.[^.]+$/, '') + '.pdf'
+    try {
+      const saveResult = await window.api.savePdf(result.html, suggestedName)
+      if (!saveResult.canceled && saveResult.filePath) {
+        setNotice(`已导出到 ${saveResult.filePath}`)
+      }
+    } catch (pdfError) {
+      setError(pdfError instanceof Error ? pdfError.message : '导出 PDF 失败。')
+    }
+  }
+
+  const applyAiSettings = useCallback((nextDraft: AiDesignConfig, message = 'AI 设计设置已应用。'): boolean => {
+    if (!nextDraft.apiKey.trim()) {
+      setNotice('请先填写 API Key。')
+      return false
+    }
+    setOptions((current) => ({ ...current, aiDesign: nextDraft }))
+    setNotice(message)
+    void window.api.saveAiSettings(nextDraft).catch(() => {
+      setNotice('AI 设置已应用，但本地缓存保存失败。')
+    })
+    return true
+  }, [])
+
+  const applyAiDesign = (): void => {
+    applyAiSettings(aiDraft)
+  }
+
+  const selectStylePreset = (preset: (typeof stylePresets)[number]): void => {
+    const nextDraft = { ...aiDraft, styleHint: preset.prompt }
+    setAiDraft(nextDraft)
+    applyAiSettings(nextDraft, `已自动应用「${preset.label}」风格。`)
+  }
+
   const deviceWidth = useMemo(() => {
     if (device === 'mobile') return 390
     if (device === 'tablet') return 768
     return undefined
   }, [device])
+
+  const sourceMatches = useMemo(() => {
+    if (view !== 'source' || !result || !sourceQuery) return []
+    const needle = sourceQuery.toLocaleLowerCase()
+    const haystack = result.html.toLocaleLowerCase()
+    const matches: number[] = []
+    let cursor = 0
+
+    while (cursor < haystack.length) {
+      const foundIndex = haystack.indexOf(needle, cursor)
+      if (foundIndex === -1) break
+      matches.push(foundIndex)
+      cursor = foundIndex + Math.max(needle.length, 1)
+    }
+
+    return matches
+  }, [result, sourceQuery, view])
+
+  const sourceMatchIndex = sourceMatches.length > 0
+    ? Math.min(sourceActiveIndex, sourceMatches.length - 1)
+    : -1
+
+  const sourceLocation = useMemo(() => {
+    if (sourceMatchIndex < 0 || !result) return null
+    const beforeMatch = result.html.slice(0, sourceMatches[sourceMatchIndex])
+    const lines = beforeMatch.split('\n')
+    return {
+      line: lines.length,
+      column: lines[lines.length - 1].length + 1
+    }
+  }, [result, sourceMatchIndex, sourceMatches])
+
+  const goToSourceMatch = useCallback((nextIndex: number) => {
+    const textarea = sourceEditorRef.current
+    if (!textarea || sourceMatches.length === 0) return
+
+    const wrappedIndex = (nextIndex + sourceMatches.length) % sourceMatches.length
+    const start = sourceMatches[wrappedIndex]
+    setSourceActiveIndex(wrappedIndex)
+
+    window.requestAnimationFrame(() => {
+      textarea.focus()
+      textarea.setSelectionRange(start, start + sourceQuery.length)
+    })
+  }, [sourceMatches, sourceQuery.length])
+
+  useEffect(() => {
+    setSourceActiveIndex(0)
+  }, [sourceQuery])
+
+  useEffect(() => {
+    if (view !== 'source') return
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'f') {
+        event.preventDefault()
+        sourceSearchRef.current?.focus()
+        sourceSearchRef.current?.select()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [view])
 
   const fileIcon = selectedFile ? formatMeta[selectedFile.format].icon : Upload
   const FileIcon = fileIcon
@@ -220,80 +344,74 @@ function App(): JSX.Element {
           </div>
         </section>
 
-        <section className="panel options-panel">
+        <section className="panel ai-panel">
           <div className="panel-heading">
-            <Palette size={15} />
-            <span>输出样式</span>
+            <Bot size={15} />
+            <span>AI 设计布局</span>
           </div>
 
-          <div className="field">
-            <label>主题</label>
-            <div className="theme-grid">
-              {themeMeta.map((theme) => (
-                <button
-                  key={theme.id}
-                  className={`theme-option ${options.theme === theme.id ? 'is-active' : ''}`}
-                  onClick={() => setOptions((current) => ({ ...current, theme: theme.id }))}
-                >
-                  {theme.label}
-                </button>
-              ))}
+          <div className="ai-settings">
+            <div className="field">
+              <label>接口地址</label>
+              <input
+                className="text-input"
+                value={aiDraft.baseUrl}
+                onChange={(event) => setAiDraft((current) => ({ ...current, baseUrl: event.target.value }))}
+                placeholder="https://api.deepseek.com"
+              />
             </div>
-          </div>
 
-          <div className="field">
-            <label>转换模式</label>
-            <div className="segmented">
-              <button
-                className={options.mode === 'clean' ? 'is-active' : ''}
-                onClick={() => setOptions((current) => ({ ...current, mode: 'clean' }))}
-              >
-                简洁
-              </button>
-              <button
-                className={options.mode === 'fidelity' ? 'is-active' : ''}
-                onClick={() => setOptions((current) => ({ ...current, mode: 'fidelity' }))}
-              >
-                高保真
-              </button>
+            <div className="field">
+              <label>模型</label>
+              <input
+                className="text-input"
+                value={aiDraft.model}
+                onChange={(event) => setAiDraft((current) => ({ ...current, model: event.target.value }))}
+                placeholder="deepseek-chat"
+              />
             </div>
-          </div>
 
-          <div className="switch-row">
-            <button
-              className={`switch ${options.darkMode ? 'is-on' : ''}`}
-              aria-label="切换深色模式"
-              onClick={() => setOptions((current) => ({ ...current, darkMode: !current.darkMode }))}
-            >
-              <span />
+            <div className="field">
+              <label>API Key</label>
+              <input
+                className="text-input"
+                type="password"
+                value={aiDraft.apiKey}
+                onChange={(event) => setAiDraft((current) => ({ ...current, apiKey: event.target.value }))}
+                placeholder="sk-..."
+              />
+            </div>
+
+            <div className="field">
+              <label>风格提示</label>
+              <input
+                className="text-input"
+                value={aiDraft.styleHint}
+                onChange={(event) => setAiDraft((current) => ({ ...current, styleHint: event.target.value }))}
+                placeholder="例如：权威咨询报告、留白杂志风"
+              />
+              <div className="style-presets">
+                {stylePresets.map((preset) => (
+                  <button
+                    key={preset.label}
+                    className="style-preset"
+                    type="button"
+                    onClick={() => selectStylePreset(preset)}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button className="apply-button" onClick={applyAiDesign}>
+              <RefreshCw size={13} />
+              应用 AI 设置
             </button>
-            <div>
-              <div className="switch-label">深色模式</div>
-              <div className="switch-desc">预览和导出使用深色主题</div>
-            </div>
-            {options.darkMode ? <Moon size={16} /> : <Sun size={16} />}
           </div>
-
-          <label className="check-row">
-            <input
-              type="checkbox"
-              checked={options.includeCover}
-              onChange={(event) => setOptions((current) => ({ ...current, includeCover: event.target.checked }))}
-            />
-            <span>自动封面</span>
-          </label>
-
-          <label className="check-row">
-            <input
-              type="checkbox"
-              checked={options.includeToc}
-              onChange={(event) => setOptions((current) => ({ ...current, includeToc: event.target.checked }))}
-            />
-            <span>生成目录</span>
-          </label>
         </section>
 
-        <div className="sidebar-footer">本地转换 · 不上传文件</div>
+        <div className="sidebar-footer">AI 设计 · 内容将发送至兼容接口</div>
       </aside>
 
       <main className="workspace">
@@ -304,6 +422,11 @@ function App(): JSX.Element {
           </div>
 
           <div className="toolbar-actions">
+            <button className="primary-button" disabled={!selectedFile || loading} onClick={() => void convert()}>
+              {loading ? <Loader2 className="spin" size={15} /> : <Sparkles size={15} />}
+              {loading ? '生成中...' : '生成 HTML'}
+            </button>
+
             <div className="view-switch">
               <button className={view === 'preview' ? 'is-active' : ''} onClick={() => setView('preview')}>
                 <Eye size={15} />
@@ -327,9 +450,13 @@ function App(): JSX.Element {
               </button>
             </div>
 
-            <button className="primary-button" disabled={!result || loading} onClick={() => void saveHtml()}>
+            <button className="secondary-button" disabled={!result || loading} onClick={() => void saveHtml()}>
               <Download size={15} />
               导出 HTML
+            </button>
+            <button className="secondary-button" disabled={!result || loading} onClick={() => void savePdf()}>
+              <FileText size={15} />
+              导出为 PDF
             </button>
           </div>
         </header>
@@ -355,7 +482,14 @@ function App(): JSX.Element {
               {formatMeta[result.format].label}
               {result.pageCount ? ` · ${result.pageCount} 页` : ''}
               {result.sheetCount ? ` · ${result.sheetCount} 个工作表` : ''}
+              {result.analysis ? ` · ${result.analysis.documentType} · ${result.analysis.audience}` : ''}
             </span>
+            {result.aiGenerated && (
+              <span className="ai-badge">
+                <Sparkles size={12} />
+                AI 布局 · {result.aiDesign?.themeName}
+              </span>
+            )}
             {result.warnings.length > 0 && <span className="warning-count">{result.warnings.length} 条提示</span>}
           </div>
         )}
@@ -365,19 +499,19 @@ function App(): JSX.Element {
             <div className="empty-state">
               <Loader2 className="spin" size={28} />
               <div>正在转换文档...</div>
-              <p>正在解析内容并生成 HTML 主题。</p>
+              <p>正在调用 AI 分析内容并生成差异化布局。</p>
             </div>
           ) : !result ? (
             <div className="empty-state">
               <div className="empty-icon">
-                <Upload size={30} strokeWidth={1.6} />
+                <Sparkles size={30} strokeWidth={1.6} />
               </div>
-              <div>选择或拖入一个文档</div>
-              <p>转换后的 HTML 会显示在这里，可预览并导出。</p>
+              <div>{selectedFile ? '文档已就绪' : '选择或拖入一个文档'}</div>
+              <p>{selectedFile ? '当前文档尚未生成 HTML。' : '转换后的 HTML 会显示在这里，可预览并导出。'}</p>
             </div>
           ) : view === 'preview' ? (
             <iframe
-              key={`${selectedFile?.path}-${result.title}-${options.theme}-${options.darkMode}`}
+              key={`${selectedFile?.path}-${result.title}-${result.aiDesign?.templateName ?? 'ai'}`}
               className="preview-frame"
               style={{ width: deviceWidth ? `${deviceWidth}px` : '100%' }}
               srcDoc={result.html}
@@ -385,7 +519,82 @@ function App(): JSX.Element {
               sandbox="allow-scripts allow-same-origin"
             />
           ) : (
-            <pre className="source-view">{result.html}</pre>
+            <div className="source-panel">
+              <div className="source-searchbar">
+                <Search size={15} />
+                <input
+                  ref={sourceSearchRef}
+                  className="source-search-input"
+                  value={sourceQuery}
+                  onChange={(event) => setSourceQuery(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault()
+                      goToSourceMatch(sourceMatchIndex + 1)
+                    }
+                    if (event.key === 'Escape') {
+                      setSourceQuery('')
+                      sourceEditorRef.current?.focus()
+                    }
+                  }}
+                  placeholder="搜索源码内容"
+                  spellCheck={false}
+                />
+                <span className={`source-search-count ${sourceQuery && sourceMatches.length === 0 ? 'is-empty' : ''}`}>
+                  {sourceQuery
+                    ? sourceMatches.length > 0
+                      ? `${sourceMatchIndex + 1} / ${sourceMatches.length}`
+                      : '无结果'
+                    : `${result.html.length.toLocaleString()} 字符`}
+                </span>
+                {sourceLocation && (
+                  <span className="source-location">
+                    {sourceLocation.line}:{sourceLocation.column}
+                  </span>
+                )}
+                <button
+                  className="source-search-button"
+                  type="button"
+                  title="上一个匹配"
+                  aria-label="上一个匹配"
+                  disabled={sourceMatches.length === 0}
+                  onClick={() => goToSourceMatch(sourceMatchIndex - 1)}
+                >
+                  <ChevronUp size={15} />
+                </button>
+                <button
+                  className="source-search-button"
+                  type="button"
+                  title="下一个匹配"
+                  aria-label="下一个匹配"
+                  disabled={sourceMatches.length === 0}
+                  onClick={() => goToSourceMatch(sourceMatchIndex + 1)}
+                >
+                  <ChevronDown size={15} />
+                </button>
+                <button
+                  className="source-search-button clear-search"
+                  type="button"
+                  title="清空搜索"
+                  aria-label="清空搜索"
+                  disabled={!sourceQuery}
+                  onClick={() => {
+                    setSourceQuery('')
+                    sourceEditorRef.current?.focus()
+                  }}
+                >
+                  <X size={14} />
+                </button>
+              </div>
+              <textarea
+                ref={sourceEditorRef}
+                className="source-view"
+                value={result.html}
+                onChange={(event) => setResult((current) => current ? { ...current, html: event.target.value } : current)}
+                spellCheck={false}
+                aria-label="HTML 源码编辑器"
+              />
+            </div>
           )}
         </section>
       </main>
