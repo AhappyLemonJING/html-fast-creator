@@ -1,0 +1,45 @@
+appId: com.htmlfastcreator.app
+productName: HTML Fast Creator
+asar: true
+electronDownload:
+  mirror: https://npmmirror.com/mirrors/electron/
+
+directories:
+  output: release
+
+files:
+  - out/**/*
+  - package.json
+  - "!**/*.map"
+  - "!**/*.tsbuildinfo"
+
+extraMetadata:
+  main: out/main/index.js
+
+mac:
+  category: public.app-category.productivity
+  identity: "-"
+  hardenedRuntime: false
+  target:
+    - target: zip
+      arch:
+        - arm64
+  artifactName: ${productName}-${version}-mac-${arch}.${ext}
+
+win:
+  target:
+    - target: portable
+      arch:
+        - x64
+    - target: zip
+      arch:
+        - x64
+  artifactName: ${productName}-${version}-win-${arch}.${ext}
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: HTML Fast Creator

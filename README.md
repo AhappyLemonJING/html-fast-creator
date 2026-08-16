@@ -91,11 +91,21 @@ npm run typecheck
 # 构建生产版本
 npm run build
 
+# 打包 macOS 安装包（输出 zip 和 dmg）
+npm run dist:mac
+
+# 打包 Windows 安装包（输出便携 exe 和 zip）
+npm run dist:win
+
 # 预览构建结果
 npm start
 ```
 
 构建产物默认输出到 `out/`。
+安装包产物默认输出到 `release/`。
+
+> `dist:mac` 建议在 macOS 上执行；`dist:win` 可在 macOS 或 Windows 上执行。
+> 当前安装包未配置 Apple Developer ID / Windows 代码签名，首次运行时 macOS 和 Windows 可能会显示安全提示。
 
 <a id="ai-配置"></a>
 ## AI 配置
@@ -171,7 +181,10 @@ flowchart LR
 ```text
 .
 ├── electron.vite.config.ts        # electron-vite 构建配置
+├── electron-builder.yml           # 双平台安装包配置
 ├── package.json
+├── scripts/
+│   └── create-mac-dmg.mjs         # 用本机 hdiutil 生成 macOS dmg
 ├── examples/                      # 已生成的 HTML/PDF 示例
 └── src/
     ├── main/
