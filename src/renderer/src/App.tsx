@@ -98,9 +98,8 @@ function App(): JSX.Element {
   })
   const [options, setOptions] = useState<ConversionOptions>({
     theme: 'auto',
-    mode: 'clean',
     includeCover: true,
-    includeToc: true,
+    includeToc: false,
     darkMode: false
   })
 
@@ -281,24 +280,6 @@ function App(): JSX.Element {
                   {theme.label}
                 </button>
               ))}
-            </div>
-          </div>
-
-          <div className="field">
-            <label>转换模式</label>
-            <div className="segmented">
-              <button
-                className={options.mode === 'clean' ? 'is-active' : ''}
-                onClick={() => setOptions((current) => ({ ...current, mode: 'clean' }))}
-              >
-                简洁
-              </button>
-              <button
-                className={options.mode === 'fidelity' ? 'is-active' : ''}
-                onClick={() => setOptions((current) => ({ ...current, mode: 'fidelity' }))}
-              >
-                高保真
-              </button>
             </div>
           </div>
 
@@ -507,7 +488,13 @@ function App(): JSX.Element {
               sandbox="allow-scripts allow-same-origin"
             />
           ) : (
-            <pre className="source-view">{result.html}</pre>
+            <textarea
+              className="source-view"
+              value={result.html}
+              onChange={(event) => setResult((current) => current ? { ...current, html: event.target.value } : current)}
+              spellCheck={false}
+              aria-label="HTML 源码编辑器"
+            />
           )}
         </section>
       </main>

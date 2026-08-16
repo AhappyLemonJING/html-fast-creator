@@ -36,7 +36,8 @@ body {
 }
 
 button,
-input {
+input,
+textarea {
   font: inherit;
 }
 
@@ -265,30 +266,6 @@ button {
   color: #ffffff;
   border-color: #5b8def;
   background: #1c3b74;
-}
-
-.segmented {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  padding: 3px;
-  border: 1px solid #334155;
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.12);
-}
-
-.segmented button {
-  height: 32px;
-  border-radius: 6px;
-  color: #a9b6c8;
-  background: transparent;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.segmented button.is-active {
-  color: #ffffff;
-  background: #28384f;
 }
 
 .switch-row {
@@ -644,6 +621,8 @@ button {
   white-space: pre-wrap;
   word-break: break-word;
   box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
+  resize: none;
+  outline: none;
 }
 
 .empty-state {

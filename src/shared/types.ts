@@ -14,8 +14,6 @@ export type OutputTheme =
   | 'terminal'
   | 'bento'
 
-export type ConversionMode = 'clean' | 'fidelity'
-
 export interface AiDesignConfig {
   enabled: boolean
   baseUrl: string
@@ -26,7 +24,6 @@ export interface AiDesignConfig {
 
 export interface ConversionOptions {
   theme: OutputTheme
-  mode: ConversionMode
   includeCover: boolean
   includeToc: boolean
   darkMode: boolean
