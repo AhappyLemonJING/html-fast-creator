@@ -14,18 +14,15 @@ import {
   Info,
   Loader2,
   Monitor,
-  Moon,
   RefreshCw,
-  Palette,
   Smartphone,
   Sparkles,
-  Sun,
   Tablet,
   Upload,
   X
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import type { AiDesignConfig, ConversionOptions, ConversionResult, DocFormat, OutputTheme } from '../../shared/types'
+import type { AiDesignConfig, ConversionOptions, ConversionResult, DocFormat } from '../../shared/types'
 
 interface SelectedFile {
   path: string
@@ -41,19 +38,21 @@ const formatMeta: Record<DocFormat, { label: string; icon: LucideIcon }> = {
   pdf: { label: 'PDF', icon: File }
 }
 
-const themeMeta: Array<{ id: OutputTheme; label: string }> = [
-  { id: 'auto', label: '智能匹配' },
-  { id: 'editorial', label: '编辑风格' },
-  { id: 'technical', label: '技术风格' },
-  { id: 'business', label: '商务风格' },
-  { id: 'print', label: '打印风格' },
-  { id: 'editorial-forest', label: '森林编辑风' },
-  { id: 'moyu-green', label: '摸鱼绿' },
-  { id: 'zen-whitespace', label: '留白禅意风' },
-  { id: 'red-white', label: '红白编辑风' },
-  { id: 'neo-brutal', label: '新粗野风' },
-  { id: 'terminal', label: '终端极客风' },
-  { id: 'bento', label: 'Bento 卡片风' }
+const initialAiDesign: AiDesignConfig = {
+  enabled: true,
+  baseUrl: 'https://api.deepseek.com',
+  model: 'deepseek-chat',
+  apiKey: '',
+  styleHint: ''
+}
+
+const stylePresets: Array<{ label: string; prompt: string }> = [
+  { label: '程序员代码风格', prompt: '程序员代码风格：深色终端配色、等宽字体、清晰代码块和简洁技术排版。' },
+  { label: '森系少女风格', prompt: '森系少女风格：奶油白底色、鼠尾草绿和柔粉点缀，圆角自然感排版。' },
+  { label: '极简杂志风', prompt: '极简杂志风：大量留白、衬线标题、克制的黑白灰配色。' },
+  { label: '商务咨询报告', prompt: '商务咨询报告：权威克制、数据图表清晰、强调结论和行动建议。' },
+  { label: '深色科技大屏', prompt: '深色科技大屏：深蓝黑底、霓虹点缀、高信息密度仪表盘布局。' },
+  { label: '学术论文白皮书', prompt: '学术论文白皮书：纸面质感、严谨排版、脚注和引用清晰。' }
 ]
 
 function detectFormat(name: string): DocFormat | null {
@@ -89,18 +88,13 @@ function App(): JSX.Element {
   const [dragActive, setDragActive] = useState(false)
   const [view, setView] = useState<'preview' | 'source'>('preview')
   const [device, setDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop')
-  const [aiDraft, setAiDraft] = useState<AiDesignConfig>({
-    enabled: false,
-    baseUrl: 'https://api.deepseek.com',
-    model: 'deepseek-chat',
-    apiKey: '',
-    styleHint: ''
-  })
+  const [aiDraft, setAiDraft] = useState<AiDesignConfig>(initialAiDesign)
   const [options, setOptions] = useState<ConversionOptions>({
     theme: 'auto',
     includeCover: true,
     includeToc: false,
-    darkMode: false
+    darkMode: false,
+    aiDesign: initialAiDesign
   })
 
   const convert = useCallback(async (override?: ConversionOptions) => {
@@ -160,29 +154,6 @@ function App(): JSX.Element {
     if (!saveResult.canceled && saveResult.filePath) {
       setNotice(`已导出到 ${saveResult.filePath}`)
     }
-  }
-
-  const toggleAiDesign = (): void => {
-    const nextEnabled = !aiDraft.enabled
-    setAiDraft((current) => ({ ...current, enabled: nextEnabled }))
-
-    if (!nextEnabled) {
-      setOptions((current) => ({
-        ...current,
-        aiDesign: current.aiDesign ? { ...current.aiDesign, enabled: false } : undefined
-      }))
-      return
-    }
-
-    if (!aiDraft.apiKey.trim()) {
-      setNotice('请先填写 API Key，再点击“应用并重新生成”。')
-      return
-    }
-
-    setOptions((current) => ({
-      ...current,
-      aiDesign: { ...aiDraft, enabled: true }
-    }))
   }
 
   const applyAiDesign = (): void => {
@@ -262,134 +233,74 @@ function App(): JSX.Element {
           </div>
         </section>
 
-        <section className="panel options-panel">
-          <div className="panel-heading">
-            <Palette size={15} />
-            <span>输出样式</span>
-          </div>
-
-          <div className="field">
-            <label>主题</label>
-            <div className="theme-grid">
-              {themeMeta.map((theme) => (
-                <button
-                  key={theme.id}
-                  className={`theme-option ${options.theme === theme.id ? 'is-active' : ''}`}
-                  onClick={() => setOptions((current) => ({ ...current, theme: theme.id }))}
-                >
-                  {theme.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="switch-row">
-            <button
-              className={`switch ${options.darkMode ? 'is-on' : ''}`}
-              aria-label="切换深色模式"
-              onClick={() => setOptions((current) => ({ ...current, darkMode: !current.darkMode }))}
-            >
-              <span />
-            </button>
-            <div>
-              <div className="switch-label">深色模式</div>
-              <div className="switch-desc">预览和导出使用深色主题</div>
-            </div>
-            {options.darkMode ? <Moon size={16} /> : <Sun size={16} />}
-          </div>
-
-          <label className="check-row">
-            <input
-              type="checkbox"
-              checked={options.includeCover}
-              onChange={(event) => setOptions((current) => ({ ...current, includeCover: event.target.checked }))}
-            />
-            <span>自动封面</span>
-          </label>
-
-          <label className="check-row">
-            <input
-              type="checkbox"
-              checked={options.includeToc}
-              onChange={(event) => setOptions((current) => ({ ...current, includeToc: event.target.checked }))}
-            />
-            <span>生成目录</span>
-          </label>
-        </section>
-
         <section className="panel ai-panel">
           <div className="panel-heading">
             <Bot size={15} />
             <span>AI 设计布局</span>
           </div>
 
-          <div className="switch-row">
-            <button
-              className={`switch ${aiDraft.enabled ? 'is-on' : ''}`}
-              aria-label="切换 AI 设计"
-              onClick={toggleAiDesign}
-            >
-              <span />
+          <div className="ai-settings">
+            <div className="field">
+              <label>接口地址</label>
+              <input
+                className="text-input"
+                value={aiDraft.baseUrl}
+                onChange={(event) => setAiDraft((current) => ({ ...current, baseUrl: event.target.value }))}
+                placeholder="https://api.deepseek.com"
+              />
+            </div>
+
+            <div className="field">
+              <label>模型</label>
+              <input
+                className="text-input"
+                value={aiDraft.model}
+                onChange={(event) => setAiDraft((current) => ({ ...current, model: event.target.value }))}
+                placeholder="deepseek-chat"
+              />
+            </div>
+
+            <div className="field">
+              <label>API Key</label>
+              <input
+                className="text-input"
+                type="password"
+                value={aiDraft.apiKey}
+                onChange={(event) => setAiDraft((current) => ({ ...current, apiKey: event.target.value }))}
+                placeholder="sk-..."
+              />
+            </div>
+
+            <div className="field">
+              <label>风格提示</label>
+              <input
+                className="text-input"
+                value={aiDraft.styleHint}
+                onChange={(event) => setAiDraft((current) => ({ ...current, styleHint: event.target.value }))}
+                placeholder="例如：权威咨询报告、留白杂志风"
+              />
+              <div className="style-presets">
+                {stylePresets.map((preset) => (
+                  <button
+                    key={preset.label}
+                    className="style-preset"
+                    type="button"
+                    onClick={() => setAiDraft((current) => ({ ...current, styleHint: preset.prompt }))}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button className="apply-button" onClick={applyAiDesign}>
+              <RefreshCw size={13} />
+              应用并重新生成
             </button>
-            <div>
-              <div className="switch-label">AI 设计</div>
-              <div className="switch-desc">{aiDraft.enabled ? '根据内容生成差异布局' : '使用本地模板和规则'}</div>
-            </div>
-            <Bot size={16} />
           </div>
-
-          {aiDraft.enabled && (
-            <div className="ai-settings">
-              <div className="field">
-                <label>接口地址</label>
-                <input
-                  className="text-input"
-                  value={aiDraft.baseUrl}
-                  onChange={(event) => setAiDraft((current) => ({ ...current, baseUrl: event.target.value }))}
-                  placeholder="https://api.deepseek.com"
-                />
-              </div>
-
-              <div className="field">
-                <label>模型</label>
-                <input
-                  className="text-input"
-                  value={aiDraft.model}
-                  onChange={(event) => setAiDraft((current) => ({ ...current, model: event.target.value }))}
-                  placeholder="deepseek-chat"
-                />
-              </div>
-
-              <div className="field">
-                <label>API Key</label>
-                <input
-                  className="text-input"
-                  type="password"
-                  value={aiDraft.apiKey}
-                  onChange={(event) => setAiDraft((current) => ({ ...current, apiKey: event.target.value }))}
-                  placeholder="sk-..."
-                />
-              </div>
-
-              <div className="field">
-                <label>风格提示</label>
-                <input
-                  className="text-input"
-                  value={aiDraft.styleHint}
-                  onChange={(event) => setAiDraft((current) => ({ ...current, styleHint: event.target.value }))}
-                  placeholder="例如：权威咨询报告、留白杂志风"
-                />
-              </div>
-
-              <button className="apply-button" onClick={applyAiDesign}>
-                <RefreshCw size={13} />
-                应用并重新生成
-              </button>
-            </div>
-          )}
         </section>
 
-        <div className="sidebar-footer">{aiDraft.enabled ? 'AI 设计开启 · 内容将发送至兼容接口' : '本地智能分析 · 不上传文件'}</div>
+        <div className="sidebar-footer">AI 设计 · 内容将发送至兼容接口</div>
       </aside>
 
       <main className="workspace">
@@ -451,7 +362,7 @@ function App(): JSX.Element {
               {formatMeta[result.format].label}
               {result.pageCount ? ` · ${result.pageCount} 页` : ''}
               {result.sheetCount ? ` · ${result.sheetCount} 个工作表` : ''}
-              {result.analysis ? ` · ${result.analysis.documentType} · ${result.analysis.templateName}` : ''}
+              {result.analysis ? ` · ${result.analysis.documentType} · ${result.analysis.audience}` : ''}
             </span>
             {result.aiGenerated && (
               <span className="ai-badge">
@@ -468,7 +379,7 @@ function App(): JSX.Element {
             <div className="empty-state">
               <Loader2 className="spin" size={28} />
               <div>正在转换文档...</div>
-              <p>{aiDraft.enabled ? '正在调用 AI 分析内容并生成差异化布局。' : '正在解析内容并生成 HTML 主题。'}</p>
+              <p>正在调用 AI 分析内容并生成差异化布局。</p>
             </div>
           ) : !result ? (
             <div className="empty-state">
@@ -480,7 +391,7 @@ function App(): JSX.Element {
             </div>
           ) : view === 'preview' ? (
             <iframe
-              key={`${selectedFile?.path}-${result.title}-${options.theme}-${options.darkMode}-${aiDraft.enabled ? result.aiDesign?.templateName ?? 'ai' : 'local'}`}
+              key={`${selectedFile?.path}-${result.title}-${result.aiDesign?.templateName ?? 'ai'}`}
               className="preview-frame"
               style={{ width: deviceWidth ? `${deviceWidth}px` : '100%' }}
               srcDoc={result.html}

@@ -691,7 +691,7 @@ function refinedCss(): string {
       gap: 10px;
     }
 
-    .timeline-item {
+    .timeline-list .timeline-item {
       display: grid;
       grid-template-columns: 34px minmax(0, 1fr) auto;
       gap: 10px;

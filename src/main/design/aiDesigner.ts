@@ -20,7 +20,7 @@ export interface AiDesignRecipe {
 export interface AppliedAiDesign {
   template: BeautifulTemplateRecipe
   tokens: string
-  recipe: AiDesignRecipe | null
+  recipe: AiDesignRecipe
 }
 
 interface AiDesignRequest {
@@ -81,7 +81,7 @@ function buildContext(request: AiDesignRequest): string {
       title: table.title,
       headers: table.headers,
       rowCount: table.rows.length,
-      rows: content.sourceFormat === 'excel' ? table.rows.slice(0, 20) : table.rows
+      rows: table.rows
     })),
     insights: {
       summary: truncate(insights.summary, 500),
@@ -377,14 +377,6 @@ export async function requestAiDesign(request: AiDesignRequest): Promise<AiDesig
 export async function applyAiDesign(
   request: AiDesignRequest
 ): Promise<AppliedAiDesign> {
-  if (!request.options.aiDesign?.enabled) {
-    return {
-      template: request.design.template,
-      tokens: request.design.tokens,
-      recipe: null
-    }
-  }
-
   const recipe = await requestAiDesign(request)
   return {
     template: {
