@@ -1,0 +1,36 @@
+{
+  "name": "html-fast-creator",
+  "version": "0.1.0",
+  "description": "Desktop tool that converts Office, PDF and Markdown documents into polished standalone HTML.",
+  "main": "./out/main/index.js",
+  "author": "html-fast-creator",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "start": "electron-vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json"
+  },
+  "dependencies": {
+    "highlight.js": "^11.12.0",
+    "lucide-react": "^1.31.0",
+    "mammoth": "^1.12.1",
+    "markdown-it": "^15.0.0",
+    "pdfjs-dist": "^6.2.108",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "^14.1.2",
+    "@types/node": "^26.2.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^5.2.0",
+    "electron": "^43.4.0",
+    "electron-vite": "^5.0.0",
+    "typescript": "^7.0.2",
+    "vite": "^7.3.6"
+  }
+}
