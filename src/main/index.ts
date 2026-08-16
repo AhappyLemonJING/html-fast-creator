@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } from 'electron'
 import { existsSync } from 'node:fs'
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { AiDesignConfig, ConversionOptions } from '../shared/types'
@@ -75,6 +75,84 @@ async function writeAiSettings(settings: AiDesignConfig): Promise<void> {
   await writeFile(settingsPath, JSON.stringify(stored, null, 2), 'utf8')
 }
 
+async function waitForPdfLayout(pdfWindow: BrowserWindow): Promise<void> {
+  await Promise.race([
+    pdfWindow.webContents.executeJavaScript(
+      'document.fonts ? document.fonts.ready.then(() => true) : true'
+    ),
+    new Promise((resolve) => setTimeout(resolve, 3000))
+  ])
+  await new Promise((resolve) => setTimeout(resolve, 100))
+}
+
+async function getPdfPageSize(pdfWindow: BrowserWindow): Promise<{ width: number; height: number }> {
+  const size = (await pdfWindow.webContents.executeJavaScript(`
+    (() => {
+      const root = document.documentElement
+      const body = document.body
+      const width = Math.max(root.scrollWidth, body ? body.scrollWidth : 0, 1)
+      const height = Math.max(root.scrollHeight, body ? body.scrollHeight : 0, 1)
+      return { width, height }
+    })()
+  `)) as { width: number; height: number }
+
+  return {
+    width: Math.max(0.5, Math.ceil((size.width + 1) / 96 * 100) / 100),
+    height: Math.max(0.5, Math.ceil((size.height + 1) / 96 * 100) / 100)
+  }
+}
+
+async function createPdfFromHtml(html: string): Promise<Buffer> {
+  const tempPath = join(
+    app.getPath('temp'),
+    `html-fast-creator-pdf-${Date.now()}-${Math.random().toString(36).slice(2)}.html`
+  )
+  await writeFile(tempPath, html, 'utf8')
+
+  const pdfWindow = new BrowserWindow({
+    show: false,
+    width: 1200,
+    height: 1600,
+    backgroundColor: '#ffffff',
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true
+    }
+  })
+  let debuggerAttached = false
+
+  try {
+    await pdfWindow.loadFile(tempPath)
+    await waitForPdfLayout(pdfWindow)
+    const pageSize = await getPdfPageSize(pdfWindow)
+
+    pdfWindow.webContents.debugger.attach('1.3')
+    debuggerAttached = true
+    await pdfWindow.webContents.debugger.sendCommand('Emulation.setEmulatedMedia', { media: 'screen' })
+
+    return await pdfWindow.webContents.printToPDF({
+      printBackground: true,
+      pageSize,
+      preferCSSPageSize: true,
+      margins: { top: 0, bottom: 0, left: 0, right: 0 },
+      scale: 1
+    })
+  } finally {
+    if (debuggerAttached && !pdfWindow.isDestroyed()) {
+      try {
+        pdfWindow.webContents.debugger.detach()
+      } catch {
+        // The window may already be closing after a failed print.
+      }
+    }
+    if (!pdfWindow.isDestroyed()) {
+      pdfWindow.destroy()
+    }
+    await rm(tempPath, { force: true })
+  }
+}
+
 function createWindow(): void {
   const window = new BrowserWindow({
     width: 1280,
@@ -140,6 +218,20 @@ app.whenReady().then(() => {
       return { canceled: true }
     }
     await writeFile(result.filePath, html, 'utf8')
+    return { canceled: false, filePath: result.filePath }
+  })
+
+  ipcMain.handle('dialog:save-pdf', async (_event, html: string, suggestedName: string) => {
+    const result = await dialog.showSaveDialog({
+      title: '导出为 PDF',
+      defaultPath: suggestedName,
+      filters: [{ name: 'PDF 文档', extensions: ['pdf'] }]
+    })
+    if (result.canceled || !result.filePath) {
+      return { canceled: true }
+    }
+    const pdfBuffer = await createPdfFromHtml(html)
+    await writeFile(result.filePath, pdfBuffer)
     return { canceled: false, filePath: result.filePath }
   })
 

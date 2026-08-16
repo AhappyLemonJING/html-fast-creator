@@ -7,6 +7,8 @@ const api = {
   chooseFile: (): Promise<string | null> => ipcRenderer.invoke('dialog:open-file'),
   saveHtml: (html: string, suggestedName: string): Promise<SaveResult> =>
     ipcRenderer.invoke('dialog:save-html', html, suggestedName),
+  savePdf: (html: string, suggestedName: string): Promise<SaveResult> =>
+    ipcRenderer.invoke('dialog:save-pdf', html, suggestedName),
   getAiSettings: (): Promise<AiDesignConfig | null> => ipcRenderer.invoke('settings:get-ai'),
   saveAiSettings: (settings: AiDesignConfig): Promise<void> =>
     ipcRenderer.invoke('settings:save-ai', settings),

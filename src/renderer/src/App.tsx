@@ -179,6 +179,19 @@ function App(): JSX.Element {
     }
   }
 
+  const savePdf = async (): Promise<void> => {
+    if (!result || !selectedFile) return
+    const suggestedName = selectedFile.name.replace(/\.[^.]+$/, '') + '.pdf'
+    try {
+      const saveResult = await window.api.savePdf(result.html, suggestedName)
+      if (!saveResult.canceled && saveResult.filePath) {
+        setNotice(`已导出到 ${saveResult.filePath}`)
+      }
+    } catch (pdfError) {
+      setError(pdfError instanceof Error ? pdfError.message : '导出 PDF 失败。')
+    }
+  }
+
   const applyAiSettings = useCallback((nextDraft: AiDesignConfig, message = 'AI 设计设置已应用。'): boolean => {
     if (!nextDraft.apiKey.trim()) {
       setNotice('请先填写 API Key。')
@@ -440,6 +453,10 @@ function App(): JSX.Element {
             <button className="secondary-button" disabled={!result || loading} onClick={() => void saveHtml()}>
               <Download size={15} />
               导出 HTML
+            </button>
+            <button className="secondary-button" disabled={!result || loading} onClick={() => void savePdf()}>
+              <FileText size={15} />
+              导出为 PDF
             </button>
           </div>
         </header>
