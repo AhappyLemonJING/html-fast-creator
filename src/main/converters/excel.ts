@@ -1,8 +1,9 @@
 import XLSX from 'xlsx'
 import type { ConversionOptions, ConversionResult } from '../../shared/types'
-import { getDesignAdvice } from '../design/designAdvisor'
-import { buildRuleBasedInsights } from '../design/insights'
+import { buildSemanticInsights } from '../design/insights'
+import { prepareDesign } from '../design/prepareDesign'
 import { renderInsightsHtml } from '../design/renderers'
+import { applyAiDesign } from '../design/aiDesigner'
 import type { DataTable, NormalizedContent } from '../design/types'
 import { buildStandaloneHtml } from '../theme'
 import { escapeHtml, titleFromPath } from '../utils'
@@ -47,9 +48,11 @@ export async function convertExcel(
     images: []
   }
 
-  const advice = getDesignAdvice('excel', options.theme)
-  const insights = buildRuleBasedInsights(content)
-  const insightHtml = renderInsightsHtml(insights, advice)
+  const design = prepareDesign(content, options)
+  const insights = buildSemanticInsights(content, design.analysis)
+  const localInsightHtml = renderInsightsHtml(insights, design.advice, design.analysis, design.template)
+  const aiDesign = await applyAiDesign({ content, design, insights, options })
+  const insightHtml = localInsightHtml
 
   const tabs = sheetNames
     .map(
@@ -74,13 +77,45 @@ export async function convertExcel(
     html: buildStandaloneHtml({
       title: titleFromPath(filePath),
       body: `${insightHtml}<div class="sheet-tabs">${tabs}</div>${panels}`,
-      options,
+      options: design.resolvedOptions,
       format: 'Excel',
-      extraBodyClass: 'excel-document'
+      extraBodyClass: 'excel-document',
+      tokens: aiDesign.tokens,
+      template: aiDesign.template,
+      analysis: design.analysis,
+      resolvedTheme: design.resolvedTheme,
+      aiDesign: aiDesign.recipe
+        ? {
+            css: aiDesign.recipe.css,
+            layoutClass: aiDesign.recipe.layoutClass,
+            coverHtml: aiDesign.recipe.coverHtml,
+            themeName: aiDesign.recipe.themeName,
+            templateName: aiDesign.recipe.templateName,
+            documentType: aiDesign.recipe.documentType,
+            audience: aiDesign.recipe.audience,
+            notes: aiDesign.recipe.notes
+          }
+        : undefined
     }),
     title: titleFromPath(filePath),
     format: 'excel',
     warnings: [],
-    sheetCount: sheetNames.length
+    sheetCount: sheetNames.length,
+    aiGenerated: aiDesign.recipe !== null,
+    aiDesign: aiDesign.recipe
+      ? {
+          themeName: aiDesign.recipe.themeName,
+          templateName: aiDesign.recipe.templateName,
+          layoutClass: aiDesign.recipe.layoutClass,
+          notes: aiDesign.recipe.notes
+        }
+      : undefined,
+    analysis: {
+      documentType: design.analysis.documentTypeLabel,
+      audience: design.analysis.audienceLabel,
+      coreFocus: design.analysis.coreFocus,
+      templateId: design.template.id,
+      templateName: design.template.name
+    }
   }
 }

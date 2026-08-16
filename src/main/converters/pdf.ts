@@ -1,9 +1,10 @@
 import { readFile } from 'node:fs/promises'
 import type { ConversionOptions, ConversionResult } from '../../shared/types'
-import { getDesignAdvice } from '../design/designAdvisor'
-import { buildRuleBasedInsights } from '../design/insights'
+import { buildSemanticInsights } from '../design/insights'
 import { normalizeTextContent } from '../design/normalizers'
+import { prepareDesign } from '../design/prepareDesign'
 import { renderInsightsHtml } from '../design/renderers'
+import { applyAiDesign } from '../design/aiDesigner'
 import { buildStandaloneHtml } from '../theme'
 import { escapeHtml, titleFromPath } from '../utils'
 
@@ -61,17 +62,38 @@ export async function convertPdf(
 
   const title = titleFromPath(filePath)
   const content = normalizeTextContent(title, 'pdf', extractedLines.join('\n'))
-  const advice = getDesignAdvice('pdf', options.theme)
-  const insights = buildRuleBasedInsights(content)
-  const insightHtml = renderInsightsHtml(insights, advice)
+  const design = prepareDesign(content, options)
+  const insights = buildSemanticInsights(content, design.analysis)
+  const localInsightHtml = renderInsightsHtml(insights, design.advice, design.analysis, design.template)
+  const aiDesign = await applyAiDesign({ content, design, insights, options })
+  if (aiDesign.recipe && !aiDesign.recipe.contentHtml.trim()) {
+    throw new Error('AI 没有返回完整正文布局，请重新生成或换用非 reasoning 模型。')
+  }
+  const bodyHtml = aiDesign.recipe?.contentHtml || `${localInsightHtml}${pages.join('')}`
 
   return {
     html: buildStandaloneHtml({
       title,
-      body: `${insightHtml}${pages.join('')}`,
-      options,
+      body: bodyHtml,
+      options: design.resolvedOptions,
       format: 'PDF',
-      extraBodyClass: 'pdf-document'
+      extraBodyClass: 'pdf-document',
+      tokens: aiDesign.tokens,
+      template: aiDesign.template,
+      analysis: design.analysis,
+      resolvedTheme: design.resolvedTheme,
+      aiDesign: aiDesign.recipe
+        ? {
+            css: aiDesign.recipe.css,
+            layoutClass: aiDesign.recipe.layoutClass,
+            coverHtml: aiDesign.recipe.coverHtml,
+            themeName: aiDesign.recipe.themeName,
+            templateName: aiDesign.recipe.templateName,
+            documentType: aiDesign.recipe.documentType,
+            audience: aiDesign.recipe.audience,
+            notes: aiDesign.recipe.notes
+          }
+        : undefined
     }),
     title,
     format: 'pdf',
@@ -81,6 +103,22 @@ export async function convertPdf(
         message: '当前使用 PDF 文本提取。扫描版页面将在后续版本中支持 OCR 或图片渲染。'
       }
     ],
-    pageCount: document.numPages
+    pageCount: document.numPages,
+    aiGenerated: aiDesign.recipe !== null,
+    aiDesign: aiDesign.recipe
+      ? {
+          themeName: aiDesign.recipe.themeName,
+          templateName: aiDesign.recipe.templateName,
+          layoutClass: aiDesign.recipe.layoutClass,
+          notes: aiDesign.recipe.notes
+        }
+      : undefined,
+    analysis: {
+      documentType: design.analysis.documentTypeLabel,
+      audience: design.analysis.audienceLabel,
+      coreFocus: design.analysis.coreFocus,
+      templateId: design.template.id,
+      templateName: design.template.name
+    }
   }
 }

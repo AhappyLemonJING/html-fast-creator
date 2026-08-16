@@ -4,6 +4,31 @@ export type Density = 'compact' | 'comfortable' | 'editorial'
 
 export type ChartKind = 'line' | 'bar' | 'donut' | 'table' | 'timeline'
 
+export type DocumentType =
+  | 'report'
+  | 'article'
+  | 'data-report'
+  | 'tutorial'
+  | 'proposal'
+  | 'technical'
+  | 'news'
+  | 'deck'
+
+export type Audience = 'executive' | 'technical' | 'general' | 'academic'
+
+export type ContentRole = 'lead' | 'context' | 'body' | 'data' | 'risk' | 'action' | 'appendix'
+
+export type BeautifulTemplateId =
+  | 'blue-professional'
+  | 'soft-editorial'
+  | 'editorial-forest'
+  | 'monochrome'
+  | 'signal'
+  | 'grove'
+  | 'vellum'
+  | 'long-table'
+  | 'capsule'
+
 export interface DesignPalette {
   background: string
   surface: string
@@ -34,6 +59,19 @@ export interface ThemeRecipe {
   tokens: string
 }
 
+export interface BeautifulTemplateRecipe {
+  id: BeautifulTemplateId
+  name: string
+  description: string
+  source: string
+  mood: string[]
+  bestFor: string[]
+  palette: DesignPalette
+  typography: TypographyRule
+  tokens: string
+  layoutClass: string
+}
+
 export interface DesignAdvice {
   themeId: OutputTheme
   themeName: string
@@ -49,6 +87,28 @@ export interface ContentSection {
   level: number
   title: string
   body: string
+}
+
+export interface SectionAnalysis {
+  sectionId: string
+  role: ContentRole
+  priority: number
+  label: string
+}
+
+export interface DocumentAnalysis {
+  documentType: DocumentType
+  documentTypeLabel: string
+  audience: Audience
+  audienceLabel: string
+  coreFocus: string
+  summary: string
+  keyThemes: string[]
+  sectionRoles: SectionAnalysis[]
+  tone: string[]
+  recommendedTemplate: BeautifulTemplateId
+  recommendedDensity: Density
+  confidence: number
 }
 
 export interface DataTable {

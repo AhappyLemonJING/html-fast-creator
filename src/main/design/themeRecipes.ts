@@ -6,6 +6,46 @@ const fontSerif = '"Source Han Serif SC", "Songti SC", "Noto Serif CJK SC", Geor
 const fontMono = '"SFMono-Regular", "Cascadia Code", "JetBrains Mono", Consolas, monospace'
 
 const recipes: Record<OutputTheme, ThemeRecipe> = {
+  auto: {
+    id: 'auto',
+    name: '智能匹配',
+    description: '根据文档类型、受众和信息密度自动选择视觉模板。',
+    mood: ['adaptive', 'intelligent', 'content-first'],
+    palette: {
+      background: '#f7f5f0',
+      surface: '#fffdf9',
+      text: '#242a2f',
+      muted: '#6f767d',
+      accent: '#a8492d',
+      accentSoft: '#f1ded5',
+      border: '#ded8cf',
+      codeBackground: '#22282d',
+      codeText: '#f4f1ea'
+    },
+    typography: {
+      headingFont: fontSerif,
+      bodyFont: fontUi,
+      monoFont: fontMono,
+      headingScale: 'clamp(30px, 4vw, 42px)',
+      bodyScale: '17px'
+    },
+    tokens: `
+      --bg: #f7f5f0;
+      --surface: #fffdf9;
+      --surface-2: #efebe3;
+      --text: #242a2f;
+      --muted: #6f767d;
+      --accent: #a8492d;
+      --accent-soft: #f1ded5;
+      --border: #ded8cf;
+      --code-bg: #22282d;
+      --code-text: #f4f1ea;
+      --radius: 12px;
+      --shadow: 0 18px 45px rgba(45, 39, 31, 0.08);
+      --font-body: ${fontUi};
+      --font-heading: ${fontSerif};
+    `
+  },
   editorial: {
     id: 'editorial',
     name: '编辑风格',

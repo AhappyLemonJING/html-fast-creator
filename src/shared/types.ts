@@ -1,6 +1,7 @@
 export type DocFormat = 'markdown' | 'word' | 'excel' | 'pdf'
 
 export type OutputTheme =
+  | 'auto'
   | 'editorial'
   | 'technical'
   | 'business'
@@ -15,12 +16,21 @@ export type OutputTheme =
 
 export type ConversionMode = 'clean' | 'fidelity'
 
+export interface AiDesignConfig {
+  enabled: boolean
+  baseUrl: string
+  model: string
+  apiKey: string
+  styleHint?: string
+}
+
 export interface ConversionOptions {
   theme: OutputTheme
   mode: ConversionMode
   includeCover: boolean
   includeToc: boolean
   darkMode: boolean
+  aiDesign?: AiDesignConfig
 }
 
 export interface ConversionWarning {
@@ -35,6 +45,20 @@ export interface ConversionResult {
   warnings: ConversionWarning[]
   pageCount?: number
   sheetCount?: number
+  aiGenerated?: boolean
+  aiDesign?: {
+    themeName: string
+    templateName: string
+    layoutClass: string
+    notes: string
+  }
+  analysis?: {
+    documentType: string
+    audience: string
+    coreFocus: string
+    templateId: string
+    templateName: string
+  }
 }
 
 export interface SaveResult {

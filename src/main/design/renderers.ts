@@ -1,5 +1,12 @@
 import { escapeHtml } from '../utils'
-import type { ChartSpec, DesignAdvice, DocumentInsights, MetricItem } from './types'
+import type {
+  BeautifulTemplateRecipe,
+  ChartSpec,
+  DesignAdvice,
+  DocumentAnalysis,
+  DocumentInsights,
+  MetricItem
+} from './types'
 
 function renderMetricCard(metric: MetricItem): string {
   const trendLabel =
@@ -184,7 +191,12 @@ function renderRiskAndActions(insights: DocumentInsights): string {
   </section>`
 }
 
-export function renderInsightsHtml(insights: DocumentInsights, advice: DesignAdvice): string {
+export function renderInsightsHtml(
+  insights: DocumentInsights,
+  advice: DesignAdvice,
+  analysis?: DocumentAnalysis,
+  template?: BeautifulTemplateRecipe
+): string {
   const metricGrid = insights.metrics.length
     ? `<div class="kpi-grid">${insights.metrics.map(renderMetricCard).join('')}</div>`
     : ''
@@ -192,10 +204,27 @@ export function renderInsightsHtml(insights: DocumentInsights, advice: DesignAdv
     ? `<div class="chart-grid">${insights.charts.map(renderChart).join('')}</div>`
     : ''
 
+  const analysisChips = analysis
+    ? `<div class="intel-strip">
+        <span class="intel-badge">智能分析</span>
+        <span>${escapeHtml(analysis.documentTypeLabel)}</span>
+        <span>${escapeHtml(analysis.audienceLabel)}</span>
+        <span>置信度 ${Math.round(analysis.confidence * 100)}%</span>
+      </div>`
+    : ''
+
+  const coreFocus = analysis?.coreFocus || insights.summary
+  const templateNote = template
+    ? `<div class="template-note">模板参考：${escapeHtml(template.name)} · <a href="${escapeHtml(template.source)}" target="_blank" rel="noreferrer">${escapeHtml(template.source)}</a></div>`
+    : ''
+
   return `<section class="insight-layer density-${advice.density}">
-    <div class="summary-card">
-      <div class="block-kicker">文档摘要</div>
-      <p>${escapeHtml(insights.summary)}</p>
+    ${analysisChips}
+    <div class="summary-card core-summary">
+      <div class="block-kicker">核心结论</div>
+      <p>${escapeHtml(coreFocus)}</p>
+      ${insights.summary && insights.summary !== coreFocus ? `<div class="summary-detail">${escapeHtml(insights.summary)}</div>` : ''}
+      ${templateNote}
     </div>
     ${metricGrid}
     ${chartGrid}

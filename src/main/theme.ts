@@ -1,5 +1,6 @@
-import type { ConversionOptions } from '../shared/types'
+import type { ConversionOptions, OutputTheme } from '../shared/types'
 import { themeTokens } from './design/themeRecipes'
+import type { BeautifulTemplateRecipe, DocumentAnalysis } from './design/types'
 import { escapeHtml } from './utils'
 
 function baseCss(): string {
@@ -872,6 +873,97 @@ function refinedCss(): string {
   `
 }
 
+function templateCss(template: BeautifulTemplateRecipe, analysis: DocumentAnalysis): string {
+  const contentMaxByLayout: Record<BeautifulTemplateRecipe['layoutClass'], string> = {
+    'layout-editorial': '900px',
+    'layout-report': '1180px',
+    'layout-dashboard': '1240px',
+    'layout-print': '880px'
+  }
+
+  return `
+    body[data-template="${template.id}"] {
+      --content-max: ${contentMaxByLayout[template.layoutClass] ?? '960px'};
+      --font-heading: ${template.typography.headingFont};
+      --font-mono: ${template.typography.monoFont};
+    }
+
+    body[data-document-type="data-report"] .content,
+    body[data-document-type="report"] .content {
+      max-width: 1240px;
+    }
+
+    .intel-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .intel-strip span {
+      padding: 5px 9px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+    }
+
+    .intel-strip .intel-badge {
+      color: var(--accent);
+      border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+      background: var(--accent-soft);
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+
+    .core-summary {
+      background: color-mix(in srgb, var(--surface) 92%, var(--accent));
+      border-color: color-mix(in srgb, var(--accent) 32%, var(--border));
+    }
+
+    .core-summary p {
+      font-family: var(--font-heading);
+      font-size: clamp(21px, 3vw, 28px);
+      font-weight: 650;
+      letter-spacing: -0.025em;
+      line-height: 1.38;
+    }
+
+    .summary-detail {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--hairline);
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.75;
+    }
+
+    .template-note {
+      margin-top: 14px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .template-note a {
+      color: inherit;
+    }
+
+    body[data-template="long-table"] .summary-card,
+    body[data-template="long-table"] .kpi-card,
+    body[data-template="long-table"] .chart-card {
+      border-radius: 999px;
+    }
+
+    body[data-template="capsule"] .kpi-card {
+      border-radius: 18px;
+    }
+  `
+}
+
 function runtimeScript(options: ConversionOptions): string {
   return `
     (() => {
@@ -947,16 +1039,46 @@ export interface BuildDocumentInput {
   options: ConversionOptions
   format: string
   extraBodyClass?: string
+  tokens?: string
+  template?: BeautifulTemplateRecipe
+  analysis?: DocumentAnalysis
+  resolvedTheme?: OutputTheme
+  aiDesign?: {
+    css: string
+    layoutClass: string
+    coverHtml: string
+    themeName: string
+    templateName: string
+    documentType: string
+    audience: string
+    notes: string
+  }
 }
 
 export function buildStandaloneHtml(input: BuildDocumentInput): string {
-  const { title, body, options, format, extraBodyClass = '' } = input
+  const {
+    title,
+    body,
+    options,
+    format,
+    extraBodyClass = '',
+    tokens: inputTokens,
+    template,
+    analysis,
+    resolvedTheme,
+    aiDesign
+  } = input
+  const activeTheme = resolvedTheme ?? (options.theme === 'auto' ? 'editorial' : options.theme)
+  const tokens = inputTokens ?? themeTokens[activeTheme]
+  const rootTokens = aiDesign ? themeTokens[activeTheme] : tokens
+  const defaultCoverInner = `<p class="eyebrow">${escapeHtml(format)} 文档</p>
+    <h1>${escapeHtml(title)}</h1>
+    <div class="meta">
+      ${analysis ? `<span>${escapeHtml(analysis.documentTypeLabel)}</span><span>${escapeHtml(analysis.audienceLabel)}</span>` : ''}
+      ${template ? `<span>模板参考 · ${escapeHtml(template.name)}</span>` : ''}
+    </div>`
   const cover = options.includeCover
-    ? `<header class="doc-cover">
-        <p class="eyebrow">${escapeHtml(format)} 文档</p>
-        <h1>${escapeHtml(title)}</h1>
-        <div class="meta">由 HTML 快速生成器生成</div>
-      </header>`
+    ? `<header class="doc-cover">${aiDesign?.coverHtml || defaultCoverInner}</header>`
     : ''
   const toc = options.includeToc ? '<nav class="toc" id="toc"></nav>' : ''
   const layoutClass = options.includeToc ? 'layout with-toc' : 'layout'
@@ -968,13 +1090,16 @@ export function buildStandaloneHtml(input: BuildDocumentInput): string {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${escapeHtml(title)}</title>
   <style>
-    :root { ${themeTokens[options.theme]} }
-    ${options.darkMode ? darkCss() : ''}
+    :root { ${rootTokens} }
+    ${options.darkMode && !aiDesign ? darkCss() : ''}
     ${baseCss()}
     ${refinedCss()}
+    ${template && analysis ? templateCss(template, analysis) : ''}
+    ${aiDesign ? `body[data-ai-designed="true"] { ${tokens} }` : ''}
+    ${aiDesign?.css || ''}
   </style>
 </head>
-<body data-theme="${options.theme}" data-format="${format.toLowerCase()}">
+<body data-theme="${activeTheme}" data-template="${template?.id ?? ''}" data-document-type="${escapeHtml(aiDesign?.documentType || analysis?.documentType || '')}" data-format="${format.toLowerCase()}" data-ai-layout="${escapeHtml(aiDesign?.layoutClass || '')}" data-ai-designed="${aiDesign ? 'true' : 'false'}">
   <div class="reading-progress"></div>
   <main class="app-shell">
     ${cover}
@@ -984,7 +1109,7 @@ export function buildStandaloneHtml(input: BuildDocumentInput): string {
         ${body}
       </article>
     </div>
-    <footer class="doc-footer">HTML 快速生成器 · ${escapeHtml(format)} · ${new Date().toLocaleDateString()}</footer>
+    <footer class="doc-footer">HTML 快速生成器 · ${escapeHtml(format)}${aiDesign ? ` · ${escapeHtml(aiDesign.themeName)}` : ''} · ${new Date().toLocaleDateString()}</footer>
   </main>
   <script>${runtimeScript(options)}</script>
 </body>

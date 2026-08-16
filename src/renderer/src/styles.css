@@ -362,6 +362,65 @@ button {
   accent-color: #2563eb;
 }
 
+.ai-panel .switch-row {
+  margin-bottom: 14px;
+}
+
+.ai-settings {
+  display: grid;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.ai-settings .field {
+  margin: 0;
+}
+
+.text-input {
+  width: 100%;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid #3d4c62;
+  border-radius: 7px;
+  color: #dbe3ee;
+  background: rgba(255, 255, 255, 0.055);
+  font-size: 11px;
+  outline: none;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+
+.text-input::placeholder {
+  color: #66758c;
+}
+
+.text-input:focus {
+  border-color: #7ea6ff;
+  background: rgba(37, 99, 235, 0.1);
+}
+
+.apply-button {
+  display: inline-flex;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 2px;
+  border: 1px solid #3d4c62;
+  border-radius: 7px;
+  color: #dbe5f2;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.apply-button:hover {
+  color: #ffffff;
+  background: rgba(37, 99, 235, 0.18);
+}
+
 .sidebar-footer {
   margin-top: auto;
   padding-top: 18px;
@@ -523,6 +582,20 @@ button {
 .warning-count {
   margin-left: auto;
   color: #b45309;
+}
+
+.ai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 8px;
+  padding: 4px 8px;
+  border: 1px solid #c7d7fe;
+  border-radius: 999px;
+  color: #1e40af;
+  background: #eff6ff;
+  font-size: 11px;
+  font-weight: 650;
 }
 
 .preview-stage {

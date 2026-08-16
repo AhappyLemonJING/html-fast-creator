@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { DragEvent, JSX } from 'react'
 import {
   AlertTriangle,
+  Bot,
   CheckCircle2,
   Code2,
   Download,
@@ -14,6 +15,7 @@ import {
   Loader2,
   Monitor,
   Moon,
+  RefreshCw,
   Palette,
   Smartphone,
   Sparkles,
@@ -23,7 +25,7 @@ import {
   X
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import type { ConversionOptions, ConversionResult, DocFormat, OutputTheme } from '../../shared/types'
+import type { AiDesignConfig, ConversionOptions, ConversionResult, DocFormat, OutputTheme } from '../../shared/types'
 
 interface SelectedFile {
   path: string
@@ -40,6 +42,7 @@ const formatMeta: Record<DocFormat, { label: string; icon: LucideIcon }> = {
 }
 
 const themeMeta: Array<{ id: OutputTheme; label: string }> = [
+  { id: 'auto', label: '智能匹配' },
   { id: 'editorial', label: '编辑风格' },
   { id: 'technical', label: '技术风格' },
   { id: 'business', label: '商务风格' },
@@ -86,21 +89,28 @@ function App(): JSX.Element {
   const [dragActive, setDragActive] = useState(false)
   const [view, setView] = useState<'preview' | 'source'>('preview')
   const [device, setDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop')
+  const [aiDraft, setAiDraft] = useState<AiDesignConfig>({
+    enabled: false,
+    baseUrl: 'https://api.deepseek.com',
+    model: 'deepseek-chat',
+    apiKey: '',
+    styleHint: ''
+  })
   const [options, setOptions] = useState<ConversionOptions>({
-    theme: 'editorial',
+    theme: 'auto',
     mode: 'clean',
     includeCover: true,
     includeToc: true,
     darkMode: false
   })
 
-  const convert = useCallback(async () => {
+  const convert = useCallback(async (override?: ConversionOptions) => {
     if (!selectedFile) return
     setLoading(true)
     setError(null)
     setResult(null)
     try {
-      const next = await window.api.convertFile(selectedFile.path, options)
+      const next = await window.api.convertFile(selectedFile.path, override ?? options)
       setResult(next)
     } catch (conversionError) {
       setError(conversionError instanceof Error ? conversionError.message : '转换失败。')
@@ -151,6 +161,39 @@ function App(): JSX.Element {
     if (!saveResult.canceled && saveResult.filePath) {
       setNotice(`已导出到 ${saveResult.filePath}`)
     }
+  }
+
+  const toggleAiDesign = (): void => {
+    const nextEnabled = !aiDraft.enabled
+    setAiDraft((current) => ({ ...current, enabled: nextEnabled }))
+
+    if (!nextEnabled) {
+      setOptions((current) => ({
+        ...current,
+        aiDesign: current.aiDesign ? { ...current.aiDesign, enabled: false } : undefined
+      }))
+      return
+    }
+
+    if (!aiDraft.apiKey.trim()) {
+      setNotice('请先填写 API Key，再点击“应用并重新生成”。')
+      return
+    }
+
+    setOptions((current) => ({
+      ...current,
+      aiDesign: { ...aiDraft, enabled: true }
+    }))
+  }
+
+  const applyAiDesign = (): void => {
+    if (!aiDraft.apiKey.trim()) {
+      setNotice('请先填写 API Key。')
+      return
+    }
+    const nextOptions = { ...options, aiDesign: aiDraft }
+    setOptions(nextOptions)
+    void convert(nextOptions)
   }
 
   const deviceWidth = useMemo(() => {
@@ -293,7 +336,79 @@ function App(): JSX.Element {
           </label>
         </section>
 
-        <div className="sidebar-footer">本地转换 · 不上传文件</div>
+        <section className="panel ai-panel">
+          <div className="panel-heading">
+            <Bot size={15} />
+            <span>AI 设计布局</span>
+          </div>
+
+          <div className="switch-row">
+            <button
+              className={`switch ${aiDraft.enabled ? 'is-on' : ''}`}
+              aria-label="切换 AI 设计"
+              onClick={toggleAiDesign}
+            >
+              <span />
+            </button>
+            <div>
+              <div className="switch-label">AI 设计</div>
+              <div className="switch-desc">{aiDraft.enabled ? '根据内容生成差异布局' : '使用本地模板和规则'}</div>
+            </div>
+            <Bot size={16} />
+          </div>
+
+          {aiDraft.enabled && (
+            <div className="ai-settings">
+              <div className="field">
+                <label>接口地址</label>
+                <input
+                  className="text-input"
+                  value={aiDraft.baseUrl}
+                  onChange={(event) => setAiDraft((current) => ({ ...current, baseUrl: event.target.value }))}
+                  placeholder="https://api.deepseek.com"
+                />
+              </div>
+
+              <div className="field">
+                <label>模型</label>
+                <input
+                  className="text-input"
+                  value={aiDraft.model}
+                  onChange={(event) => setAiDraft((current) => ({ ...current, model: event.target.value }))}
+                  placeholder="deepseek-chat"
+                />
+              </div>
+
+              <div className="field">
+                <label>API Key</label>
+                <input
+                  className="text-input"
+                  type="password"
+                  value={aiDraft.apiKey}
+                  onChange={(event) => setAiDraft((current) => ({ ...current, apiKey: event.target.value }))}
+                  placeholder="sk-..."
+                />
+              </div>
+
+              <div className="field">
+                <label>风格提示</label>
+                <input
+                  className="text-input"
+                  value={aiDraft.styleHint}
+                  onChange={(event) => setAiDraft((current) => ({ ...current, styleHint: event.target.value }))}
+                  placeholder="例如：权威咨询报告、留白杂志风"
+                />
+              </div>
+
+              <button className="apply-button" onClick={applyAiDesign}>
+                <RefreshCw size={13} />
+                应用并重新生成
+              </button>
+            </div>
+          )}
+        </section>
+
+        <div className="sidebar-footer">{aiDraft.enabled ? 'AI 设计开启 · 内容将发送至兼容接口' : '本地智能分析 · 不上传文件'}</div>
       </aside>
 
       <main className="workspace">
@@ -355,7 +470,14 @@ function App(): JSX.Element {
               {formatMeta[result.format].label}
               {result.pageCount ? ` · ${result.pageCount} 页` : ''}
               {result.sheetCount ? ` · ${result.sheetCount} 个工作表` : ''}
+              {result.analysis ? ` · ${result.analysis.documentType} · ${result.analysis.templateName}` : ''}
             </span>
+            {result.aiGenerated && (
+              <span className="ai-badge">
+                <Sparkles size={12} />
+                AI 布局 · {result.aiDesign?.themeName}
+              </span>
+            )}
             {result.warnings.length > 0 && <span className="warning-count">{result.warnings.length} 条提示</span>}
           </div>
         )}
@@ -365,7 +487,7 @@ function App(): JSX.Element {
             <div className="empty-state">
               <Loader2 className="spin" size={28} />
               <div>正在转换文档...</div>
-              <p>正在解析内容并生成 HTML 主题。</p>
+              <p>{aiDraft.enabled ? '正在调用 AI 分析内容并生成差异化布局。' : '正在解析内容并生成 HTML 主题。'}</p>
             </div>
           ) : !result ? (
             <div className="empty-state">
@@ -377,7 +499,7 @@ function App(): JSX.Element {
             </div>
           ) : view === 'preview' ? (
             <iframe
-              key={`${selectedFile?.path}-${result.title}-${options.theme}-${options.darkMode}`}
+              key={`${selectedFile?.path}-${result.title}-${options.theme}-${options.darkMode}-${aiDraft.enabled ? result.aiDesign?.templateName ?? 'ai' : 'local'}`}
               className="preview-frame"
               style={{ width: deviceWidth ? `${deviceWidth}px` : '100%' }}
               srcDoc={result.html}
