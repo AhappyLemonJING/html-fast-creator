@@ -104,6 +104,25 @@ function App(): JSX.Element {
     aiDesign: initialAiDesign
   })
 
+  useEffect(() => {
+    let active = true
+
+    window.api
+      .getAiSettings()
+      .then((saved) => {
+        if (!active || !saved) return
+        setAiDraft(saved)
+        setOptions((current) => ({ ...current, aiDesign: saved }))
+      })
+      .catch(() => {
+        if (active) setNotice('读取 AI 本地配置失败。')
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
+
   const convert = useCallback(async (override?: ConversionOptions) => {
     if (!selectedFile) return
     setLoading(true)
@@ -167,6 +186,9 @@ function App(): JSX.Element {
     }
     setOptions((current) => ({ ...current, aiDesign: nextDraft }))
     setNotice(message)
+    void window.api.saveAiSettings(nextDraft).catch(() => {
+      setNotice('AI 设置已应用，但本地缓存保存失败。')
+    })
     return true
   }, [])
 

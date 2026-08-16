@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer, webUtils } from 'electron'
-import type { ConversionOptions, ConversionResult, SaveResult } from '../shared/types'
+import type { AiDesignConfig, ConversionOptions, ConversionResult, SaveResult } from '../shared/types'
 
 const api = {
   convertFile: (filePath: string, options: ConversionOptions): Promise<ConversionResult> =>
@@ -7,6 +7,9 @@ const api = {
   chooseFile: (): Promise<string | null> => ipcRenderer.invoke('dialog:open-file'),
   saveHtml: (html: string, suggestedName: string): Promise<SaveResult> =>
     ipcRenderer.invoke('dialog:save-html', html, suggestedName),
+  getAiSettings: (): Promise<AiDesignConfig | null> => ipcRenderer.invoke('settings:get-ai'),
+  saveAiSettings: (settings: AiDesignConfig): Promise<void> =>
+    ipcRenderer.invoke('settings:save-ai', settings),
   getPathForFile: (file: File): string => webUtils.getPathForFile(file),
   platform: process.platform
 }

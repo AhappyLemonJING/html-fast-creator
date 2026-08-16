@@ -1,11 +1,79 @@
-import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
-import { writeFile } from 'node:fs/promises'
+import { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } from 'electron'
+import { existsSync } from 'node:fs'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import type { ConversionOptions } from '../shared/types'
+import type { AiDesignConfig, ConversionOptions } from '../shared/types'
 import { convertDocument } from './converters'
 
 const currentDir = dirname(fileURLToPath(import.meta.url))
+const aiSettingsFileName = 'ai-settings.json'
+
+interface StoredAiSettings {
+  enabled?: boolean
+  baseUrl?: string
+  model?: string
+  apiKey?: string
+  styleHint?: string
+}
+
+function getAiSettingsPath(): string {
+  return join(app.getPath('userData'), aiSettingsFileName)
+}
+
+function encodeApiKey(apiKey: string): string {
+  if (!apiKey) return ''
+  if (safeStorage.isEncryptionAvailable()) {
+    return safeStorage.encryptString(apiKey).toString('base64')
+  }
+
+  return Buffer.from(apiKey, 'utf8').toString('base64')
+}
+
+function decodeApiKey(storedApiKey: string): string {
+  if (!storedApiKey) return ''
+
+  try {
+    const encrypted = Buffer.from(storedApiKey, 'base64')
+    if (safeStorage.isEncryptionAvailable()) {
+      return safeStorage.decryptString(encrypted)
+    }
+    return encrypted.toString('utf8')
+  } catch {
+    return ''
+  }
+}
+
+async function readAiSettings(): Promise<AiDesignConfig | null> {
+  const settingsPath = getAiSettingsPath()
+  if (!existsSync(settingsPath)) return null
+
+  const raw = await readFile(settingsPath, 'utf8')
+  const stored = JSON.parse(raw) as StoredAiSettings
+
+  return {
+    enabled: stored.enabled ?? true,
+    baseUrl: typeof stored.baseUrl === 'string' ? stored.baseUrl : 'https://api.deepseek.com',
+    model: typeof stored.model === 'string' ? stored.model : 'deepseek-chat',
+    apiKey: decodeApiKey(typeof stored.apiKey === 'string' ? stored.apiKey : ''),
+    styleHint: typeof stored.styleHint === 'string' ? stored.styleHint : ''
+  }
+}
+
+async function writeAiSettings(settings: AiDesignConfig): Promise<void> {
+  const settingsPath = getAiSettingsPath()
+  await mkdir(dirname(settingsPath), { recursive: true })
+
+  const stored: StoredAiSettings = {
+    enabled: settings.enabled,
+    baseUrl: settings.baseUrl,
+    model: settings.model,
+    apiKey: encodeApiKey(settings.apiKey),
+    styleHint: settings.styleHint
+  }
+
+  await writeFile(settingsPath, JSON.stringify(stored, null, 2), 'utf8')
+}
 
 function createWindow(): void {
   const window = new BrowserWindow({
@@ -42,6 +110,10 @@ app.whenReady().then(() => {
   ipcMain.handle('convert:file', (_event, filePath: string, options: ConversionOptions) =>
     convertDocument(filePath, options)
   )
+
+  ipcMain.handle('settings:get-ai', () => readAiSettings())
+
+  ipcMain.handle('settings:save-ai', (_event, settings: AiDesignConfig) => writeAiSettings(settings))
 
   ipcMain.handle('dialog:open-file', async () => {
     const result = await dialog.showOpenDialog({

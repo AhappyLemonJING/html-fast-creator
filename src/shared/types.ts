@@ -67,6 +67,8 @@ export interface WindowApi {
   convertFile: (filePath: string, options: ConversionOptions) => Promise<ConversionResult>
   chooseFile: () => Promise<string | null>
   saveHtml: (html: string, suggestedName: string) => Promise<SaveResult>
+  getAiSettings: () => Promise<AiDesignConfig | null>
+  saveAiSettings: (settings: AiDesignConfig) => Promise<void>
   getPathForFile: (file: File) => string
   platform: string
 }
