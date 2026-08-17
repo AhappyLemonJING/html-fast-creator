@@ -20,6 +20,7 @@ mac:
   category: public.app-category.productivity
   identity: "-"
   hardenedRuntime: false
+  icon: image.png
   target:
     - target: zip
       arch:
@@ -27,6 +28,7 @@ mac:
   artifactName: ${productName}-${version}-mac-${arch}.${ext}
 
 win:
+  icon: image.png
   target:
     - target: portable
       arch:

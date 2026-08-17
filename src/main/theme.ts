@@ -61,10 +61,10 @@ function baseCss(): string {
     }
     .layout.with-toc { grid-template-columns: 220px minmax(0, 1fr); }
     .toc {
-      position: sticky;
-      top: 32px;
-      max-height: calc(100vh - 64px);
-      overflow: auto;
+      position: static;
+      top: auto;
+      max-height: none;
+      overflow: visible;
       padding-right: 12px;
       color: var(--muted);
       font-size: 13px;
