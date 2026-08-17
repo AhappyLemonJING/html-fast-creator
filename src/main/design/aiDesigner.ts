@@ -30,6 +30,20 @@ interface AiDesignRequest {
   options: ConversionOptions
 }
 
+type ChatMessage = {
+  role: 'system' | 'user' | 'assistant'
+  content: string
+}
+
+interface CompletionResult {
+  content: string
+  finishReason: string
+}
+
+const DEFAULT_MAX_TOKENS = 16000
+const LEGACY_MAX_TOKENS = 8000
+const MAX_CONTINUATION_ATTEMPTS = 3
+
 const allowedLayoutClasses = new Set([
   'layout-editorial',
   'layout-report',
@@ -213,7 +227,9 @@ function parseRecipe(
   try {
     parsed = JSON.parse(extractJson(raw)) as Record<string, unknown>
   } catch {
-    throw new Error('AI 返回的内容不是有效 JSON，请换用非 reasoning 模型或增加输出长度后重试。')
+    throw new Error(
+      `AI 返回的内容不是有效 JSON，输出内容长度 ${raw.length} 字符。若文档较长，可能是模型输出达到 max_tokens 上限后被截断。`
+    )
   }
 
   const themeName = String(parsed.themeName || 'AI 智能设计').slice(0, 40)
@@ -254,12 +270,13 @@ function resolveConfig(config: AiDesignConfig): Required<Pick<AiDesignConfig, 'b
   return { baseUrl, model, apiKey }
 }
 
-async function requestCompletion(
+async function requestCompletionResult(
   baseUrl: string,
   model: string,
   apiKey: string,
-  messages: Array<{ role: 'system' | 'user'; content: string }>
-): Promise<string> {
+  messages: ChatMessage[],
+  maxTokens: number
+): Promise<CompletionResult> {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 60_000)
 
@@ -274,7 +291,7 @@ async function requestCompletion(
         model,
         messages,
         temperature: 0.4,
-        max_tokens: 8000
+        max_tokens: maxTokens
       }),
       signal: controller.signal
     })
@@ -289,17 +306,28 @@ async function requestCompletion(
 
     if (!response.ok) {
       const apiError = payload.error as { message?: string } | undefined
-      throw new Error(apiError?.message || `AI 请求失败：HTTP ${response.status}，${rawBody.slice(0, 300)}`)
+      const message = apiError?.message || `AI 请求失败：HTTP ${response.status}，${rawBody.slice(0, 300)}`
+
+      if (maxTokens > LEGACY_MAX_TOKENS && /max_tokens|maximum context|context length|invalid.*max/i.test(message)) {
+        return requestCompletionResult(baseUrl, model, apiKey, messages, LEGACY_MAX_TOKENS)
+      }
+
+      throw new Error(message)
     }
+
+    const firstChoice = Array.isArray(payload.choices)
+      ? (payload.choices[0] as Record<string, unknown> | undefined)
+      : undefined
+    const finishReason = typeof firstChoice?.finish_reason === 'string' ? firstChoice.finish_reason : ''
 
     const content = extractMessageContent(payload)
     if (!content) {
       throw new Error(
-        `AI 没有返回最终设计内容。若使用的是 reasoning 模型，可能是输出 token 不足，已使用 max_tokens=8000。原始响应：${rawBody.slice(0, 500)}`
+        `AI 没有返回最终设计内容。若使用的是 reasoning 模型，可能是输出 token 不足，已使用 max_tokens=${maxTokens}。原始响应：${rawBody.slice(0, 500)}`
       )
     }
 
-    return content
+    return { content, finishReason }
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
       throw new Error('AI 设计请求超时，请检查网络或模型配置。')
@@ -308,6 +336,71 @@ async function requestCompletion(
   } finally {
     clearTimeout(timeout)
   }
+}
+
+function appendWithoutOverlap(existing: string, next: string): string {
+  const maxOverlap = Math.min(existing.length, next.length, 8000)
+
+  for (let size = maxOverlap; size > 0; size -= 1) {
+    const suffix = existing.slice(-size)
+    const prefix = next.slice(0, size)
+    if (suffix === prefix) {
+      return existing + next.slice(size)
+    }
+  }
+
+  return existing + next
+}
+
+async function completeDesignJson(
+  baseUrl: string,
+  model: string,
+  apiKey: string,
+  initialMessages: ChatMessage[],
+  fallbackTokens: string,
+  fallbackLayoutClass: string,
+  fallbackDensity: string
+): Promise<AiDesignRecipe> {
+  let combined = ''
+  let messages = initialMessages
+  let lastFinishReason = ''
+
+  for (let attempt = 0; attempt < MAX_CONTINUATION_ATTEMPTS; attempt += 1) {
+    const result = await requestCompletionResult(baseUrl, model, apiKey, messages, DEFAULT_MAX_TOKENS)
+    combined = attempt === 0 ? result.content : appendWithoutOverlap(combined, result.content)
+    lastFinishReason = result.finishReason
+
+    try {
+      return parseRecipe(combined, fallbackTokens, fallbackLayoutClass, fallbackDensity)
+    } catch (combinedError) {
+      if (attempt > 0) {
+        try {
+          return parseRecipe(result.content, fallbackTokens, fallbackLayoutClass, fallbackDensity)
+        } catch {
+          // Continue below; the continuation fragment may still need another pass.
+        }
+      }
+
+      if (result.finishReason !== 'length') {
+        throw combinedError
+      }
+    }
+
+    const previousTail = combined.slice(-6000)
+    messages = [
+      ...initialMessages,
+      { role: 'assistant', content: previousTail },
+      {
+        role: 'user',
+        content:
+          '你上一次输出的 JSON 被截断了。请从上面最后一个字符继续，只输出剩余 JSON 内容；不要重复已输出内容，也不要添加解释。'
+      }
+    ]
+  }
+
+  throw new Error(
+    `AI 连续 ${MAX_CONTINUATION_ATTEMPTS} 次输出后仍无法生成完整 JSON，最后结束原因：${lastFinishReason || 'unknown'}。请缩短输入文档或换用输出上限更高的模型。`
+  )
 }
 
 function extractMessageContent(payload: Record<string, unknown>): string {
@@ -361,13 +454,14 @@ export async function requestAiDesign(request: AiDesignRequest): Promise<AiDesig
   }
 
   const resolved = resolveConfig(config)
-  const raw = await requestCompletion(resolved.baseUrl, resolved.model, resolved.apiKey, [
-    { role: 'system', content: AI_HTML_DESIGNER_SYSTEM_PROMPT },
-    { role: 'user', content: buildContext(request) }
-  ])
-
-  return parseRecipe(
-    raw,
+  return completeDesignJson(
+    resolved.baseUrl,
+    resolved.model,
+    resolved.apiKey,
+    [
+      { role: 'system', content: AI_HTML_DESIGNER_SYSTEM_PROMPT },
+      { role: 'user', content: buildContext(request) }
+    ],
     request.design.tokens,
     request.design.template.layoutClass,
     request.design.advice.density
