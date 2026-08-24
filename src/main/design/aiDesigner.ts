@@ -2,6 +2,7 @@ import type { AiDesignConfig, ConversionOptions } from '../../shared/types'
 import type { BeautifulTemplateRecipe, DocumentInsights, NormalizedContent } from './types'
 import type { PreparedDesign } from './prepareDesign'
 import { AI_HTML_DESIGNER_SYSTEM_PROMPT } from './aiPrompt'
+import { jsonrepair } from 'jsonrepair'
 
 export interface AiDesignRecipe {
   themeName: string
@@ -118,16 +119,85 @@ function buildContext(request: AiDesignRequest): string {
 }
 
 function extractJson(raw: string): string {
-  const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i)
+  const cleaned = raw.replace(/^\uFEFF/, '').trim()
+  const fenced = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/i)
   if (fenced?.[1]) return fenced[1].trim()
 
-  const firstBrace = raw.indexOf('{')
-  const lastBrace = raw.lastIndexOf('}')
-  if (firstBrace >= 0 && lastBrace > firstBrace) {
-    return raw.slice(firstBrace, lastBrace + 1)
+  const start = cleaned.indexOf('{')
+  if (start < 0) return cleaned
+
+  let depth = 0
+  let inString = false
+  let escaped = false
+
+  for (let index = start; index < cleaned.length; index += 1) {
+    const char = cleaned[index]
+    if (inString) {
+      if (escaped) {
+        escaped = false
+        continue
+      }
+      if (char === '\\') {
+        escaped = true
+        continue
+      }
+      if (char === '"') inString = false
+      continue
+    }
+
+    if (char === '"') {
+      inString = true
+      continue
+    }
+    if (char === '{') {
+      depth += 1
+      continue
+    }
+    if (char === '}') {
+      depth -= 1
+      if (depth === 0) return cleaned.slice(start, index + 1)
+    }
   }
 
-  return raw.trim()
+  return cleaned.slice(start)
+}
+
+function isLikelyTruncated(raw: string): boolean {
+  const candidate = extractJson(raw)
+  if (!candidate.startsWith('{')) return false
+
+  let depth = 0
+  let inString = false
+  let escaped = false
+
+  for (const char of candidate) {
+    if (inString) {
+      if (escaped) {
+        escaped = false
+        continue
+      }
+      if (char === '\\') {
+        escaped = true
+        continue
+      }
+      if (char === '"') inString = false
+      continue
+    }
+
+    if (char === '"') {
+      inString = true
+      continue
+    }
+    if (char === '{') {
+      depth += 1
+      continue
+    }
+    if (char === '}') {
+      depth -= 1
+    }
+  }
+
+  return depth !== 0 || inString
 }
 
 function parseTokenObject(value: string): Record<string, string> {
@@ -223,13 +293,32 @@ function parseRecipe(
   fallbackLayoutClass: string,
   fallbackDensity: string
 ): AiDesignRecipe {
+  const candidate = extractJson(raw)
   let parsed: Record<string, unknown>
+
   try {
-    parsed = JSON.parse(extractJson(raw)) as Record<string, unknown>
-  } catch {
-    throw new Error(
-      `AI 返回的内容不是有效 JSON，输出内容长度 ${raw.length} 字符。若文档较长，可能是模型输出达到 max_tokens 上限后被截断。`
-    )
+    parsed = JSON.parse(candidate) as Record<string, unknown>
+  } catch (firstError) {
+    const firstMessage = firstError instanceof Error ? firstError.message : String(firstError)
+
+    if (isLikelyTruncated(raw)) {
+      const normalizedHead = candidate.slice(0, 180).replace(/\s+/g, ' ').trim()
+      const normalizedTail = candidate.slice(-180).replace(/\s+/g, ' ').trim()
+      throw new Error(
+        `AI 返回的内容不是有效 JSON，输出内容长度 ${candidate.length} 字符，疑似 JSON 被截断。若文档较长，可能是模型输出达到 max_tokens 上限后被截断。解析错误：${firstMessage}\n开头：${normalizedHead}\n结尾：${normalizedTail}`
+      )
+    }
+
+    try {
+      parsed = JSON.parse(jsonrepair(candidate)) as Record<string, unknown>
+    } catch (repairError) {
+      const normalizedHead = candidate.slice(0, 180).replace(/\s+/g, ' ').trim()
+      const normalizedTail = candidate.slice(-180).replace(/\s+/g, ' ').trim()
+      const repairMessage = repairError instanceof Error ? repairError.message : String(repairError)
+      throw new Error(
+        `AI 返回的内容不是有效 JSON，输出内容长度 ${candidate.length} 字符。若文档较长，可能是模型输出达到 max_tokens 上限后被截断。原始解析错误：${firstMessage}；修复后仍失败：${repairMessage}\n开头：${normalizedHead}\n结尾：${normalizedTail}`
+      )
+    }
   }
 
   const themeName = String(parsed.themeName || 'AI 智能设计').slice(0, 40)
@@ -381,7 +470,11 @@ async function completeDesignJson(
         }
       }
 
-      if (result.finishReason !== 'length') {
+      const shouldContinue =
+        attempt < MAX_CONTINUATION_ATTEMPTS - 1 &&
+        (result.finishReason === 'length' || isLikelyTruncated(combined))
+
+      if (!shouldContinue) {
         throw combinedError
       }
     }
